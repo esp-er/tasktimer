@@ -11,6 +11,8 @@ out/**
 #other folders
 backup/**
 jar/**
+.metals/**
+.bloop/**
 
 # Package Files #
 *.jar
