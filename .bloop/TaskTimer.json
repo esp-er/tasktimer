@@ -1,0 +1,282 @@
+{
+    "version": "1.4.0",
+    "project": {
+        "name": "TaskTimer",
+        "directory": "/home/patrik/Documents/scala/tasktimer-mill/TaskTimer",
+        "workspaceDir": "/home/patrik/Documents/scala/tasktimer-mill",
+        "sources": [
+            "/home/patrik/Documents/scala/tasktimer-mill/TaskTimer/src"
+        ],
+        "dependencies": [
+            
+        ],
+        "classpath": [
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig_2.13/0.14.0/pureconfig_2.13-0.14.0.jar",
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/os-lib_2.13/0.7.1/os-lib_2.13-0.7.1.jar",
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/castor_2.13/0.1.7/castor_2.13-0.1.7.jar",
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.5/scala-library-2.13.5.jar",
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-core_2.13/0.14.0/pureconfig-core_2.13-0.14.0.jar",
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic_2.13/0.14.0/pureconfig-generic_2.13-0.14.0.jar",
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/geny_2.13/0.6.2/geny_2.13-0.6.2.jar",
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.13/0.2.1/sourcecode_2.13-0.2.1.jar",
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-macros_2.13/0.14.0/pureconfig-macros_2.13-0.14.0.jar",
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/config/1.4.0/config-1.4.0.jar",
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic-base_2.13/0.14.0/pureconfig-generic-base_2.13-0.14.0.jar",
+            "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/chuusai/shapeless_2.13/2.3.3/shapeless_2.13-2.3.3.jar"
+        ],
+        "out": "/home/patrik/Documents/scala/tasktimer-mill/.bloop/out/TaskTimer",
+        "classesDir": "/home/patrik/Documents/scala/tasktimer-mill/.bloop/out/TaskTimer/classes",
+        "resources": [
+            "/home/patrik/Documents/scala/tasktimer-mill/TaskTimer/resources"
+        ],
+        "scala": {
+            "organization": "org.scala-lang",
+            "name": "scala-compiler",
+            "version": "2.13.5",
+            "options": [
+                
+            ],
+            "jars": [
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-compiler/2.13.5/scala-compiler-2.13.5.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.13.5/scala-reflect-2.13.5.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.5/scala-library-2.13.5.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jline/jline/3.19.0/jline-3.19.0.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/net/java/dev/jna/jna/5.3.1/jna-5.3.1.jar"
+            ]
+        },
+        "java": {
+            "options": [
+                
+            ]
+        },
+        "platform": {
+            "name": "jvm",
+            "config": {
+                "home": "/home/patrik/.sdkman/candidates/java/current",
+                "options": [
+                    "-Duser.dir=/home/patrik/Documents/scala/tasktimer-mill"
+                ]
+            },
+            "mainClass": [
+                
+            ],
+            "classpath": [
+                "/home/patrik/Documents/scala/tasktimer-mill/TaskTimer/resources",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.5/scala-library-2.13.5.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig_2.13/0.14.0/pureconfig_2.13-0.14.0.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/os-lib_2.13/0.7.1/os-lib_2.13-0.7.1.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/castor_2.13/0.1.7/castor_2.13-0.1.7.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-core_2.13/0.14.0/pureconfig-core_2.13-0.14.0.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic_2.13/0.14.0/pureconfig-generic_2.13-0.14.0.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/geny_2.13/0.6.2/geny_2.13-0.6.2.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.13/0.2.1/sourcecode_2.13-0.2.1.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-macros_2.13/0.14.0/pureconfig-macros_2.13-0.14.0.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/config/1.4.0/config-1.4.0.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic-base_2.13/0.14.0/pureconfig-generic-base_2.13-0.14.0.jar",
+                "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/chuusai/shapeless_2.13/2.3.3/shapeless_2.13-2.3.3.jar"
+            ],
+            "resources": [
+                "/home/patrik/Documents/scala/tasktimer-mill/TaskTimer/resources"
+            ]
+        },
+        "resolution": {
+            "modules": [
+                {
+                    "organization": "com.lihaoyi",
+                    "name": "sourcecode_2.13",
+                    "version": "0.2.1",
+                    "artifacts": [
+                        {
+                            "name": "sourcecode_2.13",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.13/0.2.1/sourcecode_2.13-0.2.1.jar"
+                        },
+                        {
+                            "name": "sourcecode_2.13",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.13/0.2.1/sourcecode_2.13-0.2.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.chuusai",
+                    "name": "shapeless_2.13",
+                    "version": "2.3.3",
+                    "artifacts": [
+                        {
+                            "name": "shapeless_2.13",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/chuusai/shapeless_2.13/2.3.3/shapeless_2.13-2.3.3.jar"
+                        },
+                        {
+                            "name": "shapeless_2.13",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/chuusai/shapeless_2.13/2.3.3/shapeless_2.13-2.3.3-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.github.pureconfig",
+                    "name": "pureconfig-generic_2.13",
+                    "version": "0.14.0",
+                    "artifacts": [
+                        {
+                            "name": "pureconfig-generic_2.13",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic_2.13/0.14.0/pureconfig-generic_2.13-0.14.0.jar"
+                        },
+                        {
+                            "name": "pureconfig-generic_2.13",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic_2.13/0.14.0/pureconfig-generic_2.13-0.14.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.github.pureconfig",
+                    "name": "pureconfig-macros_2.13",
+                    "version": "0.14.0",
+                    "artifacts": [
+                        {
+                            "name": "pureconfig-macros_2.13",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-macros_2.13/0.14.0/pureconfig-macros_2.13-0.14.0.jar"
+                        },
+                        {
+                            "name": "pureconfig-macros_2.13",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-macros_2.13/0.14.0/pureconfig-macros_2.13-0.14.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.github.pureconfig",
+                    "name": "pureconfig-core_2.13",
+                    "version": "0.14.0",
+                    "artifacts": [
+                        {
+                            "name": "pureconfig-core_2.13",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-core_2.13/0.14.0/pureconfig-core_2.13-0.14.0.jar"
+                        },
+                        {
+                            "name": "pureconfig-core_2.13",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-core_2.13/0.14.0/pureconfig-core_2.13-0.14.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.github.pureconfig",
+                    "name": "pureconfig-generic-base_2.13",
+                    "version": "0.14.0",
+                    "artifacts": [
+                        {
+                            "name": "pureconfig-generic-base_2.13",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic-base_2.13/0.14.0/pureconfig-generic-base_2.13-0.14.0.jar"
+                        },
+                        {
+                            "name": "pureconfig-generic-base_2.13",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic-base_2.13/0.14.0/pureconfig-generic-base_2.13-0.14.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.lihaoyi",
+                    "name": "os-lib_2.13",
+                    "version": "0.7.1",
+                    "artifacts": [
+                        {
+                            "name": "os-lib_2.13",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/os-lib_2.13/0.7.1/os-lib_2.13-0.7.1.jar"
+                        },
+                        {
+                            "name": "os-lib_2.13",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/os-lib_2.13/0.7.1/os-lib_2.13-0.7.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.scala-lang",
+                    "name": "scala-library",
+                    "version": "2.13.5",
+                    "artifacts": [
+                        {
+                            "name": "scala-library",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.5/scala-library-2.13.5.jar"
+                        },
+                        {
+                            "name": "scala-library",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.5/scala-library-2.13.5-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.lihaoyi",
+                    "name": "geny_2.13",
+                    "version": "0.6.2",
+                    "artifacts": [
+                        {
+                            "name": "geny_2.13",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/geny_2.13/0.6.2/geny_2.13-0.6.2.jar"
+                        },
+                        {
+                            "name": "geny_2.13",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/geny_2.13/0.6.2/geny_2.13-0.6.2-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.typesafe",
+                    "name": "config",
+                    "version": "1.4.0",
+                    "artifacts": [
+                        {
+                            "name": "config",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/config/1.4.0/config-1.4.0.jar"
+                        },
+                        {
+                            "name": "config",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/config/1.4.0/config-1.4.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.lihaoyi",
+                    "name": "castor_2.13",
+                    "version": "0.1.7",
+                    "artifacts": [
+                        {
+                            "name": "castor_2.13",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/castor_2.13/0.1.7/castor_2.13-0.1.7.jar"
+                        },
+                        {
+                            "name": "castor_2.13",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/castor_2.13/0.1.7/castor_2.13-0.1.7-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.github.pureconfig",
+                    "name": "pureconfig_2.13",
+                    "version": "0.14.0",
+                    "artifacts": [
+                        {
+                            "name": "pureconfig_2.13",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig_2.13/0.14.0/pureconfig_2.13-0.14.0.jar"
+                        },
+                        {
+                            "name": "pureconfig_2.13",
+                            "classifier": "sources",
+                            "path": "/home/patrik/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/pureconfig/pureconfig_2.13/0.14.0/pureconfig_2.13-0.14.0-sources.jar"
+                        }
+                    ]
+                }
+            ]
+        },
+        "tags": [
+            "library"
+        ]
+    }
+}

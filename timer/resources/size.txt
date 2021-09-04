@@ -1,0 +1,6 @@
+WIDTH=600 #가로
+HEIGHT=640 #세로
+TIMER_SIZE=32 #타이머 숫자 크기
+TASK_SIZE=16 #리스트 글자 크기
+BUTTON_SIZE=24 #버튼 숫자 크기
+ICON_SIZE=32 #아이콘크기
