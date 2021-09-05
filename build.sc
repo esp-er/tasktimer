@@ -11,6 +11,7 @@ object TaskTimer extends ScalaModule{
     ivy"com.lihaoyi::upickle:1.4.0",
     ivy"org.kordamp.ikonli:ikonli-swing:12.2.0",
     ivy"org.kordamp.ikonli:ikonli-antdesignicons-pack:12.2.0",
+    ivy"org.kordamp.ikonli:ikonli-openiconic-pack:12.2.0",
     ivy"com.github.pureconfig::pureconfig-core:0.16.0"
   )
 

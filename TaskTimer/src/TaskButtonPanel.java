@@ -18,10 +18,11 @@ public class TaskButtonPanel{
 	private TaskButton[] buttonArr = new TaskButton[NUM_BUTTONS];
 	private Color buttonColor;
 	private Color backgroundColor; 
+  private boolean compact = false;
 	public JPanel buttonPanel;
 	
 	TaskButtonPanel(ArrayList<String> buttons, TaskButtonListener listener){
-		buttonPanel = new JPanel(new GridLayout(3,4));
+		buttonPanel = new JPanel(new GridLayout(3,3));
 		buttonPanel.setBackground(backgroundColor);
 		
 		Font f = new Font(Font.MONOSPACED, Font.BOLD, BUTTON_FONTSIZE);
@@ -43,6 +44,37 @@ public class TaskButtonPanel{
 			b.btn.setEnabled(value);	
 		}
 	}
+
+  public void setCompact(boolean b){
+    if(b == true){
+      var i = 0;
+      for(TaskButton button : buttonArr){
+        if(i > 2){
+          buttonPanel.remove(button.btn);
+        }
+        i += 1;
+      }
+      buttonPanel.setLayout(new GridLayout(1,3));
+      buttonPanel.revalidate();
+      buttonPanel.repaint();
+      compact = true;
+    }
+    else{
+      buttonPanel.removeAll();
+      buttonPanel.setLayout(new GridLayout(3,3));
+      for(TaskButton button : buttonArr){
+        buttonPanel.add(button.btn);
+      }
+      buttonPanel.revalidate();
+      buttonPanel.repaint();
+      compact = false;
+    }
+  }
+
+  public boolean isCompact(){
+    return compact;
+  }
+
 
 	public Color getButtonColor(){
 		return buttonColor;

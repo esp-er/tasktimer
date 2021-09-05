@@ -17,11 +17,6 @@ public class Task {
         tz = zone.getName();
     }
 
-    /*
-    public Task() {
-        this("기본", 60);
-    }*/
-
     public String getDateStr() {
         DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss");
         return taskDate.format(f);

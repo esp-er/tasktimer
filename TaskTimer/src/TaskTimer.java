@@ -48,6 +48,7 @@ import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.IkonProvider;
 import org.kordamp.ikonli.antdesignicons.AntDesignIconsOutlinedIkonHandler;
 import org.kordamp.ikonli.antdesignicons.AntDesignIconsFilledIkonHandler;
+import org.kordamp.ikonli.openiconic.OpeniconicIkonHandler;
 
 
 public class TaskTimer {
@@ -231,7 +232,6 @@ public class TaskTimer {
 
     // set up Application main ImageIcon
     frame = new JFrame("TaskTimer - " + TimerConf.project());
-    frame.setVisible(true);
     ImageIcon appIcon = new ImageIcon(this.getClass().getResource("/png/appicon_96.png"));
     frame.setIconImage(appIcon.getImage());
     frame.addKeyListener(new KeyboardListener());
@@ -394,6 +394,7 @@ public class TaskTimer {
     //
     var antIcons = new AntDesignIconsOutlinedIkonHandler();
     var antIconsFilled = new AntDesignIconsFilledIkonHandler();
+    var openIcons = new OpeniconicIkonHandler();
     taskDelButton = new JButton(FontIcon.of(antIcons.resolve("anto-delete"), 18));
     //taskDelButton.setFont(f);
     taskDelButton.addActionListener(new TaskDeleteListener());
@@ -484,7 +485,55 @@ public class TaskTimer {
     topPanel.add(timePanel);
     timeText.setMaximumSize(timeText.getPreferredSize());
 
-    topPanel.add(keypad.buttonPanel);
+    JPanel keypadPanel = new JPanel(new BorderLayout());
+    keypadPanel.setBackground(BackColor);
+    var downArrow = FontIcon.of(antIcons.resolve("anto-caret-down"),16);
+    var rightArrow = FontIcon.of(antIcons.resolve("anto-caret-right"),16);
+    JButton toggleKeypad = new JButton(downArrow);
+    toggleKeypad.setHorizontalAlignment(SwingConstants.LEFT);
+    toggleKeypad.setBackground(BackColor);
+    toggleKeypad.setRolloverEnabled(false);
+    toggleKeypad.setContentAreaFilled(false);
+    toggleKeypad.setBorder(BorderFactory.createEmptyBorder(2,4,2,2));
+    toggleKeypad.setFocusPainted(false);
+    toggleKeypad.addActionListener((ActionEvent e) -> {
+      if(keypad.buttonPanel.isVisible()){
+        keypad.buttonPanel.setVisible(false);
+        toggleKeypad.setIcon(rightArrow);
+      }
+      else{
+        keypad.buttonPanel.setVisible(true);
+        toggleKeypad.setIcon(downArrow);
+      }
+    });
+
+    var rowIcon = FontIcon.of(openIcons.resolve("oi-expand-up"),16);
+    var gridIcon = FontIcon.of(openIcons.resolve("oi-grid-three-up"),16);
+    JButton toggleCompact= new JButton(rowIcon);
+    toggleCompact.setHorizontalAlignment(SwingConstants.RIGHT);
+    toggleCompact.setBackground(BackColor);
+    toggleCompact.setRolloverEnabled(false);
+    toggleCompact.setContentAreaFilled(false);
+    toggleCompact.setBorder(BorderFactory.createEmptyBorder(2,2,2,8));
+    toggleCompact.setFocusPainted(false);
+    toggleCompact.addActionListener((ActionEvent e) -> {
+      if(!keypad.isCompact()){
+        keypad.setCompact(true);
+        toggleCompact.setIcon(gridIcon);
+      }
+      else{
+        keypad.setCompact(false);
+        toggleCompact.setIcon(rowIcon);
+      }
+    });
+
+    JPanel togglePane = new JPanel(new BorderLayout());
+    togglePane.setBackground(BackColor);
+    togglePane.add(BorderLayout.WEST, toggleKeypad);
+    togglePane.add(BorderLayout.EAST, toggleCompact);
+    keypadPanel.add(BorderLayout.NORTH, togglePane);
+    keypadPanel.add(BorderLayout.CENTER, keypad.buttonPanel);
+    topPanel.add(keypadPanel);
 
     workPanel = new JPanel();
     workPanel.setBackground(BackColor);
@@ -545,6 +594,7 @@ public class TaskTimer {
     // Set up frame properties
     frame.setSize(WINSIZE_X, WINSIZE_Y);
     frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    frame.setVisible(true);
 
     try {
       setUIFont(new javax.swing.plaf.FontUIResource(Font.SANS_SERIF, Font.PLAIN, 22));
@@ -590,7 +640,6 @@ public class TaskTimer {
       }
     });
 
-    frame.setVisible(true);
   }
 
   public static void setUIFont(javax.swing.plaf.FontUIResource f) {
@@ -768,7 +817,6 @@ public class TaskTimer {
         File inFile = fileLoadDiag.getSelectedFile();
         var list = TaskIO.loadTasks(inFile.getAbsolutePath());
 
-       
         var loadTasks = new JList(list.tasks());
         var scroll = new JScrollPane(loadTasks);
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -909,7 +957,7 @@ public class TaskTimer {
       taskList.add(0, new Task(workName.getText(), clock.getCountSeconds(), currTimeZone));
       //TODO: pass the taskList to Scala Task JSON Writer (and write)
       updateTotalWorkLabel();
-      //AutoSave 
+      //AutoSave
       Task[] taskArr = Arrays.copyOf(taskList.toArray(), taskList.toArray().length, Task[].class);
       TaskIO.autoSave(workName.getText(), getTotalWorkStr(), taskArr);
       goalProgress.setValue((int) getTotalWorkTime());
@@ -1009,8 +1057,8 @@ public class TaskTimer {
       var hrstr = String.format("%.3f", sectoHr((int) total)) + " 시간";
       var minstr = String.format("%.1f", sectoMin((int) total)) + " 분";
       var secstr = Integer.toString((int) total) + " 초";
-      return "총: " + taskList.getSize() + "개" + " - " 
-                                + sectoHrMinSec((int) total) + " (" 
+      return "총: " + taskList.getSize() + "개" + " - "
+                                + sectoHrMinSec((int) total) + " ("
                                 + " |" + hrstr + "| "
                                 + " |" + minstr + "| "
                                 + " |" + secstr + "| )";
