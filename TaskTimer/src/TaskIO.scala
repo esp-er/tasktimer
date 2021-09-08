@@ -3,42 +3,84 @@ package patriker.tasktimer
 import os._
 import javax.swing.DefaultListModel
 import scala.util.control.NonFatal
-
+import upickle.default.{read, write, ReadWriter, macroRW, readwriter}
+import ScalaTask._
 
 case class SimpleList(val label: String, val tasks: DefaultListModel[String]){}
 object TaskIO{
-  /*
-  def writeTask(filename: String, t: Task) = {
-    val u = ujson.Obj("project" -> t.project, "timezone" -> t.tz, "date" -> t.getDateStr(), "time" -> t.taskTime)
-    println(ujson.write(u))
-  }*/
 
- def loadTasks(filePath: String): SimpleList = {
-   var lines = IndexedSeq[String]()
-   var result = SimpleList("File Not Read", new DefaultListModel[String]())
-   try
-    lines = os.read.lines(os.Path(filePath))
-   catch
-    case NonFatal(ex) => lines = lines :+ "#Error reading"
-   finally
-    val labelOpt = lines.dropWhile(!_.startsWith(" ---")).headOption
-    val label: String = labelOpt.getOrElse("Unknown File Format")
-    result = SimpleList(label, new DefaultListModel[String]())
-    lines.filter(_.startsWith("#")).foreach{
-      t => result.tasks.addElement(t)
-    }
+   private val partStr: PartialFunction[ujson.Value, Option[String]] = {
+     case ujson.Str(s) => Some(s)
+     case _ => None}
+   private val partNum: PartialFunction[ujson.Value, Option[Int]] = {
+     case ujson.Num(x) => Some(x.toInt)
+     case _ => None}
+   //implicit def NamesRw: upickle.default.ReadWriter[Name] = upickle.default.macroRW
+   implicit val namesRw: ReadWriter[ScalaTask] = readwriter[ujson.Value].bimap[ScalaTask](
+     task => ujson.Obj("project" -> task.project, 
+       "tz" -> task.tz, 
+       "tzId" -> task.taskDate.getZone.toString,
+       "date" -> task.getDateStr(),
+       "seconds" -> task.taskTime),
+     jsval => ScalaTask(
+       jsval.obj.get("project").flatMap(partStr).getOrElse("Unknown"),
+       jsval.obj.get("tz").flatMap(partStr).getOrElse("Korea - KST"),
+       jsval.obj.get("tzId").flatMap(partStr).getOrElse("Asia/Seoul"), 
+       jsval.obj.get("date").flatMap(partStr).getOrElse("Not a date"),
+       jsval.obj.get("seconds").flatMap(partNum).getOrElse(0))
+     )
 
-   result
- }
+   def loadTasksJson(filePath: String = "tasks.json"): DefaultListModel[ScalaTask] = { 
+     val data = 
+       try 
+         Right(os.read(os.pwd / filePath))
+       catch
+         case NonFatal(e) => Left(e)
+     var result = new DefaultListModel[ScalaTask]()
+     val taskList = upickle.default.read[Seq[ScalaTask]](data.getOrElse("[{}]"))
+     taskList.foreach(result.addElement)
+     result
+   }
 
-  def saveTasks(filePath: String, workLabel: String, tasks: Array[Task]): Unit = {
-    val tasksOut = for((t,num) <- tasks.zipWithIndex) yield "#" + ((tasks.length-num)) + " " + t
-    val outStr = "--- " + workLabel + "--- \n\n" + tasksOut.mkString("\n") + "\n"
-    try
-      os.write.over(os.Path(filePath), outStr)
-    catch 
-      case NonFatal(ex) => println("Could Not Write file!")
-  }
+   def writeTasksJson(filePath: String = "tasks.json", tasks: Array[ScalaTask]): Unit = {
+     val out = upickle.default.write[Seq[ScalaTask]](tasks.toIndexedSeq)
+     try{
+       os.write(os.pwd / filePath, out)
+     }
+     catch{
+       case NonFatal(e) => os.write(os.pwd / "error.json", "Error writing tasks.json")
+     }
+     finally{
+       println("Could not write any tasks!" + out)
+     }
+   }
+
+   def loadTasks(filePath: String): SimpleList = {
+     var lines = IndexedSeq[String]()
+     var result = SimpleList("File Not Read", new DefaultListModel[String]())
+     try
+       lines = os.read.lines(os.Path(filePath))
+     catch
+       case NonFatal(ex) => lines = lines :+ "#Error reading"
+     finally
+       val labelOpt = lines.dropWhile(!_.startsWith(" ---")).headOption
+       val label: String = labelOpt.getOrElse("Unknown File Format")
+       result = SimpleList(label, new DefaultListModel[String]())
+       lines.filter(_.startsWith("#")).foreach{
+         t => result.tasks.addElement(t)
+       }
+
+     result
+   }
+
+   def saveTasks(filePath: String, workLabel: String, tasks: Array[Task]): Unit = {
+     val tasksOut = for((t,num) <- tasks.zipWithIndex) yield "#" + ((tasks.length-num)) + " " + t
+     val outStr = "--- " + workLabel + "--- \n\n" + tasksOut.mkString("\n") + "\n"
+     try
+       os.write.over(os.Path(filePath), outStr)
+     catch 
+       case NonFatal(ex) => println("Could Not Write file!")
+   }
 
   def autoSave(projName: String, workLabel: String, tasks: Array[Task]): Unit = {
     if(tasks.length >= 1){

@@ -279,7 +279,7 @@ public class TaskTimer {
     // Progress Goals Toggle button
     ImageIcon goalsIcon = new ImageIcon(this.getClass().getResource("/png/goal.png"));
     ImageIcon goalsIconDialog = new ImageIcon(
-        goalsIcon.getImage().getScaledInstance(ICONSIZE, ICONSIZE, java.awt.Image.SCALE_SMOOTH));
+    goalsIcon.getImage().getScaledInstance(ICONSIZE, ICONSIZE, java.awt.Image.SCALE_SMOOTH));
     goalsIcon = new ImageIcon(
         goalsIcon.getImage().getScaledInstance(ICONSIZE / 2, ICONSIZE / 2, java.awt.Image.SCALE_SMOOTH));
     goalButton = new JToggleButton(goalsIcon);
@@ -595,13 +595,12 @@ public class TaskTimer {
     frame.setSize(WINSIZE_X, WINSIZE_Y);
     frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     frame.setVisible(true);
+    TaskIO.loadTasksJson("test.json");
 
     try {
       setUIFont(new javax.swing.plaf.FontUIResource(Font.SANS_SERIF, Font.PLAIN, 22));
-    } catch (Exception e) {
-    }
+    } catch (Exception e) {}
     frame.addWindowListener(new WindowAdapter() {
-
       @Override
       public void windowActivated(WindowEvent we) {
         if(taskbar != null && taskbarState == State.ERROR){
@@ -609,7 +608,6 @@ public class TaskTimer {
           taskbar.setWindowProgressState(frame, taskbarState);
         }
       }
-
       @Override
       public void windowClosing(WindowEvent we) {
         if (taskList.getSize() > 0) {
@@ -706,14 +704,11 @@ public class TaskTimer {
   }
 
   public class KeyboardListener implements KeyListener {
-    public void keyPressed(KeyEvent e) {
-    }
-
+    public void keyPressed(KeyEvent e){}
     public void keyReleased(KeyEvent e) {
       // if(e.getKeyCode()== KeyEvent.VK_SPACE)
       // restartBtn.doClick();
     }
-
     public void keyTyped(KeyEvent e) {
     }
   }
@@ -739,6 +734,7 @@ public class TaskTimer {
       aClip.setFramePosition(0);
       aClip.start();
       var t = new Task(workName.getText(), clock.getCountSeconds(), currTimeZone);
+      //var st = ScalaTask.apply(workName.getText(), clock.getCountSeconds(), currTimeZone);
       taskList.add(0, t);
       if(taskbar != null){
         taskbarState = State.ERROR;

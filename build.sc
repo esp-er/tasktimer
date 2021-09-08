@@ -15,6 +15,7 @@ object TaskTimer extends ScalaModule{
     ivy"com.github.pureconfig::pureconfig-core:0.16.0"
   )
 
+
   override def assemblyRules = Seq(
     Assembly.Rule.Exclude("timer.conf"),
     Assembly.Rule.Exclude("sizes.conf"),

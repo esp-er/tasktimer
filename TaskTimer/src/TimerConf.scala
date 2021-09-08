@@ -18,6 +18,7 @@ case class TimerSize(
   iconsize: Int
 ) extends SizeConf
 
+
 sealed trait AppConf derives ConfigReader
 case class TimerConfig(project: String, colors: ColorConfig, keypad: List[String]) extends AppConf{
   override def toString: String = {
@@ -27,7 +28,6 @@ case class TimerConfig(project: String, colors: ColorConfig, keypad: List[String
     "keypad=" + keypad.map(_.mkString("\"","","\"")).mkString("[ ", ",", " ]")
   }
 }
-
 
 case class ColorConfig(background: String, buttons: String){
   override def toString: String = { 
