@@ -38,21 +38,16 @@ object TaskIO{
          case NonFatal(e) => Left(e)
      var result = new DefaultListModel[ScalaTask]()
      val taskList = upickle.default.read[Seq[ScalaTask]](data.getOrElse("[{}]"))
-     taskList.foreach(result.addElement)
+     taskList.filter(_.taskTime != 0).foreach(result.addElement)
      result
    }
 
    def writeTasksJson(filePath: String = "tasks.json", tasks: Array[ScalaTask]): Unit = {
      val out = upickle.default.write[Seq[ScalaTask]](tasks.toIndexedSeq)
-     try{
-       os.write(os.pwd / filePath, out)
-     }
-     catch{
-       case NonFatal(e) => os.write(os.pwd / "error.json", "Error writing tasks.json")
-     }
-     finally{
-       println("Could not write any tasks!" + out)
-     }
+     try
+       os.write.over(os.pwd / filePath, out)
+     catch
+       case NonFatal(e) => os.write.over(os.pwd / "error.json", "Error writing tasks.json")
    }
 
    def loadTasks(filePath: String): SimpleList = {
@@ -73,7 +68,7 @@ object TaskIO{
      result
    }
 
-   def saveTasks(filePath: String, workLabel: String, tasks: Array[Task]): Unit = {
+   def saveTasks(filePath: String, workLabel: String, tasks: Array[ScalaTask]): Unit = {
      val tasksOut = for((t,num) <- tasks.zipWithIndex) yield "#" + ((tasks.length-num)) + " " + t
      val outStr = "--- " + workLabel + "--- \n\n" + tasksOut.mkString("\n") + "\n"
      try
@@ -82,7 +77,7 @@ object TaskIO{
        case NonFatal(ex) => println("Could Not Write file!")
    }
 
-  def autoSave(projName: String, workLabel: String, tasks: Array[Task]): Unit = {
+  def autoSave(projName: String, workLabel: String, tasks: Array[ScalaTask]): Unit = {
     if(tasks.length >= 1){
       val saveDir = "backup"
       val tasksOut = for((t,num) <- tasks.zipWithIndex) yield "#" + ((tasks.length-num)) + " " + t

@@ -45,7 +45,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import org.kordamp.ikonli.swing.FontIcon;
 import org.kordamp.ikonli.Ikon;
-import org.kordamp.ikonli.IkonProvider;
 import org.kordamp.ikonli.antdesignicons.AntDesignIconsOutlinedIkonHandler;
 import org.kordamp.ikonli.antdesignicons.AntDesignIconsFilledIkonHandler;
 import org.kordamp.ikonli.openiconic.OpeniconicIkonHandler;
@@ -85,7 +84,7 @@ public class TaskTimer {
 
   // TODO: add all panels to a common data structure(for easy manipul.)
   private Clip aClip;
-  private DefaultListModel<Task> taskList;
+  private DefaultListModel<ScalaTask> taskList;
   private JList taskWindow;
   private JFrame frame;
   private JTextField workLabel;
@@ -121,10 +120,8 @@ public class TaskTimer {
     TASK_FONTSIZE = sizes.tasksize();
     ICONSIZE = sizes.iconsize();
 
-    // Construct new task list
-    taskList = new DefaultListModel<Task>();
-
     // Task GUI
+    taskList = TaskIO.loadTasksJson("tasks.json");
     taskWindow = new JList(taskList);
 
     // Button data
@@ -394,7 +391,6 @@ public class TaskTimer {
     //
     var antIcons = new AntDesignIconsOutlinedIkonHandler();
     var antIconsFilled = new AntDesignIconsFilledIkonHandler();
-    var openIcons = new OpeniconicIkonHandler();
     taskDelButton = new JButton(FontIcon.of(antIcons.resolve("anto-delete"), 18));
     //taskDelButton.setFont(f);
     taskDelButton.addActionListener(new TaskDeleteListener());
@@ -462,7 +458,8 @@ public class TaskTimer {
     buttonList.add(goalButton);
 
     // Auto-repeat checkbox
-    autoRepeat = new JCheckBox("Repeat", false);
+    var openIcons = new OpeniconicIkonHandler();
+    autoRepeat = new JCheckBox("자동", false);
     autoRepeat.setBackground(BackColor);
     // repeatButton.setPreferredSize(new Dimension(64,64));
     // Vertical Layout for cancel and repeat buttons
@@ -507,6 +504,7 @@ public class TaskTimer {
       }
     });
 
+    //var rowIcon = FontIcon.of(Openiconic.EXPAND_DOWN);
     var rowIcon = FontIcon.of(openIcons.resolve("oi-expand-up"),16);
     var gridIcon = FontIcon.of(openIcons.resolve("oi-grid-three-up"),16);
     JButton toggleCompact= new JButton(rowIcon);
@@ -594,8 +592,9 @@ public class TaskTimer {
     // Set up frame properties
     frame.setSize(WINSIZE_X, WINSIZE_Y);
     frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+    updateTotalWorkLabel();
     frame.setVisible(true);
-    TaskIO.loadTasksJson("test.json");
 
     try {
       setUIFont(new javax.swing.plaf.FontUIResource(Font.SANS_SERIF, Font.PLAIN, 22));
@@ -628,8 +627,8 @@ public class TaskTimer {
             String defaultFile = (workName.getText() == "") ? "fileToSave" : workName.getText();
             fileSave.showSaveDialog(frame);
             fileSave.setSelectedFile(new File(defaultFile));
-            Task[] taskArr = Arrays.copyOf(taskList.toArray(), taskList.toArray().length, Task[].class);
-            TaskIO.saveTasks(fileSave.getSelectedFile().getAbsolutePath() + ".txt", getTotalWorkStr(), taskArr);
+            ScalaTask[] taskArr = Arrays.copyOf(taskList.toArray(), taskList.toArray().length, ScalaTask[].class);
+            //TaskIO.saveTasks(fileSave.getSelectedFile().getAbsolutePath() + ".txt", getTotalWorkStr(), taskArr);
             System.exit(0);
           }
         } else {
@@ -733,7 +732,7 @@ public class TaskTimer {
     public void finishTick() {
       aClip.setFramePosition(0);
       aClip.start();
-      var t = new Task(workName.getText(), clock.getCountSeconds(), currTimeZone);
+      var t = ScalaTask.apply(workName.getText(), clock.getCountSeconds(), currTimeZone);
       //var st = ScalaTask.apply(workName.getText(), clock.getCountSeconds(), currTimeZone);
       taskList.add(0, t);
       if(taskbar != null){
@@ -766,8 +765,9 @@ public class TaskTimer {
       // Add new task to list
       updateTotalWorkLabel();
       //AutoSave
-      Task[] taskArr = Arrays.copyOf(taskList.toArray(), taskList.toArray().length, Task[].class);
+      ScalaTask[] taskArr = Arrays.copyOf(taskList.toArray(), taskList.toArray().length, ScalaTask[].class);
       TaskIO.autoSave(workName.getText(), getTotalWorkStr(), taskArr);
+      TaskIO.writeTasksJson("tasks.json", taskArr);
 
       frame.revalidate();
       frame.repaint();
@@ -797,7 +797,7 @@ public class TaskTimer {
         fileSave.setSelectedFile(new File(defaultFile));
         fileSave.showSaveDialog(frame);
         File tmp = fileSave.getSelectedFile();
-        Task[] taskArr = Arrays.copyOf(taskList.toArray(), taskList.toArray().length, Task[].class);
+        ScalaTask[] taskArr = Arrays.copyOf(taskList.toArray(), taskList.size(), ScalaTask[].class);
         TaskIO.saveTasks(tmp.getAbsolutePath() + ".txt", getTotalWorkStr(), taskArr);
       }
     }
@@ -950,12 +950,12 @@ public class TaskTimer {
       playBtn.setEnabled(false);
       timeText.setText("00:00");
       // Add new task to list
-      taskList.add(0, new Task(workName.getText(), clock.getCountSeconds(), currTimeZone));
-      //TODO: pass the taskList to Scala Task JSON Writer (and write)
+      taskList.add(0, ScalaTask.apply(workName.getText(), clock.getCountSeconds(), currTimeZone));
       updateTotalWorkLabel();
       //AutoSave
-      Task[] taskArr = Arrays.copyOf(taskList.toArray(), taskList.toArray().length, Task[].class);
+      ScalaTask[] taskArr = Arrays.copyOf(taskList.toArray(), taskList.size(), ScalaTask[].class);
       TaskIO.autoSave(workName.getText(), getTotalWorkStr(), taskArr);
+      TaskIO.writeTasksJson("tasks.json", taskArr);
       goalProgress.setValue((int) getTotalWorkTime());
       keypad.setEnabled(true);
       frame.requestFocus();
@@ -1070,7 +1070,7 @@ public class TaskTimer {
     int numTasks = taskList.getSize();
     long totalWork = 0;
     for (int i = 0; i < numTasks; i++) {
-      totalWork += taskList.getElementAt(i).taskTime;
+      totalWork += taskList.getElementAt(i).taskTime();
     }
     return totalWork;
   }
