@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Created-By: Scala mill
-Main-Class: patriker.tasktimer.TaskTimer
-Class-Path: .
-
