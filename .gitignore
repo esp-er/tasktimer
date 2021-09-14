@@ -5,6 +5,9 @@
 # Log file
 *.log
 
+#JSON app data
+*.json
+
 #mill out
 out/**
 
