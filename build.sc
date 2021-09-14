@@ -7,7 +7,7 @@ object TaskTimer extends ScalaModule{
   def scalaVersion = "3.0.1"
   def ivyDeps = Agg(
     ivy"com.lihaoyi::os-lib:0.7.8",
-    ivy"com.lihaoyi::castor:0.1.8",
+    //ivy"com.lihaoyi::castor:0.1.8",
     ivy"com.lihaoyi::upickle:1.4.0",
     ivy"org.kordamp.ikonli:ikonli-antdesignicons-pack:12.2.0",
     ivy"org.kordamp.ikonli:ikonli-openiconic-pack:12.2.0",

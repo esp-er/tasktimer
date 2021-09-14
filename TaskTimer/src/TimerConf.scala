@@ -4,9 +4,7 @@ import scala.collection.JavaConverters._
 import java.util.ArrayList
 import pureconfig._
 import pureconfig.generic.derivation.default._
-import os.{resource, write}
 import os._
-import sourcecode.Text.generate
 
 sealed trait SizeConf derives ConfigReader
 case class TimerSize(

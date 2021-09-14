@@ -9,7 +9,7 @@ import java.time.format.DateTimeParseException
 case class ScalaTask(project: String, tz: String, taskDate: ZonedDateTime, taskTime: Int):
     def getDateStr(): String = return taskDate.format(ScalaTask.dateFormat)
     override def toString(): String  = {
-        return taskDate.format(ScalaTask.dateFormat) + " (" + tz + ") " + "- Project: " + project + " -  " + Integer.toString(taskTime)
+        return taskDate.format(ScalaTask.dateFormat) + " (" + tz + ") " + "- Project: " + project + " -  " + taskTime.toString
                 + " sec"
     }
 

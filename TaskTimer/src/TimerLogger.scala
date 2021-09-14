@@ -1,12 +1,14 @@
 package patriker.tasktimer
 import java.util.List
 import os._
-
+/*
 class TimerLogger(log: os.Path, old: os.Path, rotateSize: Int)
             (implicit ac: castor.Context) extends castor.SimpleActor[java.util.List[String]]{
   def run(l: java.util.List[String]) = {
     val ll = l.size
   }
+
+*/
    /*	
     val newLogSize = logSize + s.length + 1
     if (newLogSize <= rotateSize) logSize = newLogSize
@@ -18,7 +20,6 @@ class TimerLogger(log: os.Path, old: os.Path, rotateSize: Int)
   }
   private var logSize = 0
   */
-}
 
 /*
 implicit val ac = new castor.Context.Test()

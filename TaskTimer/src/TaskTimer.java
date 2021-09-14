@@ -1,53 +1,64 @@
 package patriker.tasktimer;
 
-import java.util.ArrayList;
-import java.io.File;
-import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.lang.Math.*;
-import javax.sound.sampled.*;
-import javax.swing.*;
-import javax.swing.filechooser.*;
-import javax.swing.AbstractButton;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.JProgressBar;
-import javax.swing.JComponent;
-import javax.swing.event.*;
-import javax.swing.UIManager;
-import javax.swing.BorderFactory;
-import javax.imageio.ImageIO;
-import javax.swing.text.NumberFormatter;
-import java.text.NumberFormat;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.*;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Taskbar;
 import java.awt.Taskbar.State;
-import javax.swing.WindowConstants;
-import java.util.*;
-import java.text.SimpleDateFormat;
+import java.awt.event.*;
+import java.io.File;
 import java.text.DateFormat;
-import java.time.ZonedDateTime;
-import java.time.ZoneId;
-import java.time.Instant;
-import java.time.format.*;
-import java.time.temporal.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import org.kordamp.ikonli.swing.FontIcon;
-import org.kordamp.ikonli.Ikon;
-import org.kordamp.ikonli.antdesignicons.AntDesignIconsOutlinedIkonHandler;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.NumberFormatter;
+
 import org.kordamp.ikonli.antdesignicons.AntDesignIconsFilledIkonHandler;
+import org.kordamp.ikonli.antdesignicons.AntDesignIconsOutlinedIkonHandler;
 import org.kordamp.ikonli.openiconic.OpeniconicIkonHandler;
+import org.kordamp.ikonli.swing.FontIcon;
 
 
 public class TaskTimer {
@@ -618,18 +629,24 @@ public class TaskTimer {
               ObjButtons[0]);
           if (PromptResult == JOptionPane.NO_OPTION) {
             System.exit(0);
-          } else {
+          } 
+          else if(PromptResult == JOptionPane.CLOSED_OPTION){
+            //Return to main window!
+          }
+          else {
             JFileChooser fileSave = new JFileChooser();
             fileSave.setMinimumSize(new Dimension(700, 1000));
             FileNameExtensionFilter filter = new FileNameExtensionFilter("Text file", "txt");
             fileSave.addChoosableFileFilter(filter);
             fileSave.setFileFilter(filter);
             String defaultFile = (workName.getText() == "") ? "fileToSave" : workName.getText();
-            fileSave.showSaveDialog(frame);
-            fileSave.setSelectedFile(new File(defaultFile));
-            ScalaTask[] taskArr = Arrays.copyOf(taskList.toArray(), taskList.toArray().length, ScalaTask[].class);
-            //TaskIO.saveTasks(fileSave.getSelectedFile().getAbsolutePath() + ".txt", getTotalWorkStr(), taskArr);
-            System.exit(0);
+            var choice = fileSave.showSaveDialog(frame);
+            if (choice == JFileChooser.APPROVE_OPTION){
+              fileSave.setSelectedFile(new File(defaultFile));
+              ScalaTask[] taskArr = Arrays.copyOf(taskList.toArray(), taskList.toArray().length, ScalaTask[].class);
+              TaskIO.saveTasks(fileSave.getSelectedFile().getAbsolutePath() + ".txt", getTotalWorkStr(), taskArr);
+              System.exit(0);
+            }
           }
         } else {
           System.exit(0);
