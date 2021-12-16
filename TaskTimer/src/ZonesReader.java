@@ -15,12 +15,12 @@ import java.net.URI;
 
 
 public class ZonesReader {
-    private int n;
     private TaskTimeZone[] zones;
 
     public ZonesReader(){
-      Stream<String> l = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream("timezones.txt"))).lines();
-        zones = l.map(s -> new TaskTimeZone(ZoneId.of(s.split(" ", 2)[0]), s.split(" ", 2)[1])).toArray(TaskTimeZone[]::new);
+      Stream<String> l = 
+        new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream("timezones.txt"))).lines();
+      zones = l.map(s -> new TaskTimeZone(ZoneId.of(s.split(" ", 2)[0]), s.split(" ", 2)[1])).toArray(TaskTimeZone[]::new);
     }
 
     public int getNumZones(){

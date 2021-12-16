@@ -1,9 +1,9 @@
-Asia/Seoul Korea - KST
-US/Pacific US - PST
-US/Central US - CST
-US/Eastern US - EST
-Etc/GMT EU - GMT+0
-Etc/GMT+1 EU - GMT+1
-Etc/GMT+2 EU - GMT+2
-Etc/GMT+3 EU - GMT+3
-CET EU - CET
+Asia/Seoul Korea(KST)
+US/Pacific US(PST)
+US/Central US(CST)
+US/Eastern US(EST)
+Etc/GMT EU(GMT+0)
+Etc/GMT+1 EU(GMT+1)
+Etc/GMT+2 EU(GMT+2)
+Etc/GMT+3 EU(GMT+3)
+CET EU(CET)
