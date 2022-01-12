@@ -951,6 +951,7 @@ public class TaskTimer {
     return (mins * 60) + secs;
   }
 
+//TODO: improve upon this and have a toggle button instead of swapping
   private void swapButtons(JButton b) {
     timePanel.removeAll();
     timePanel.add(checkButton);

@@ -2,6 +2,7 @@
 # Compiled class file
 *.class
 
+
 # Log file
 *.log
 
@@ -16,9 +17,11 @@ backup/**
 jar/**
 .metals/**
 .bloop/**
+tmp/**
 
 # Package Files #
 *.jar
+*.jsa
 *.war
 *.nar
 *.ear
