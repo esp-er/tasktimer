@@ -21,23 +21,23 @@ public class TaskButtonPanel{
   private boolean compact = false;
 	public JPanel buttonPanel;
 	
-	TaskButtonPanel(ArrayList<String> buttons, TaskButtonListener listener){
-		buttonPanel = new JPanel(new GridLayout(3,3));
-		buttonPanel.setBackground(backgroundColor);
-		
-		Font f = new Font(Font.MONOSPACED, Font.BOLD, BUTTON_FONTSIZE);
-		
-		buttonColor = TaskTimer.ButtonColor;
-		backgroundColor = TaskTimer.BackColor;
+  TaskButtonPanel(ArrayList<String> buttons, TaskButtonListener listener){
+    buttonPanel = new JPanel(new GridLayout(3,3));
+    buttonPanel.setBackground(backgroundColor);
 
-    
+    Font f = new Font(Font.MONOSPACED, Font.BOLD, BUTTON_FONTSIZE);
+
+    buttonColor = TaskTimer.ButtonColor;
+    backgroundColor = TaskTimer.BackColor;
+
+
     var i = 0;
-		for(String b : buttons){
-			buttonArr[i] = new TaskButton(b, i, buttonColor, listener,f);
-			buttonPanel.add(buttonArr[i].btn);
+    for(String b : buttons){
+      buttonArr[i] = new TaskButton(b, i, buttonColor, listener,f);
+      buttonPanel.add(buttonArr[i].btn);
       i++;
-		}
-	}
+    }
+  }
 
 	public void setEnabled(boolean value){
 		for(TaskButton b : buttonArr){

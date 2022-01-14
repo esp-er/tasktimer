@@ -38,6 +38,9 @@ object TaskTimer extends ScalaModule{
   //Use when excluding javafx from fatjar
   //def compileIvyDeps ={ Agg() ++javaFXModules }
 
+	def forkArgs = Seq("--add-opens=java.desktop/java.awt=ALL-UNNAMED")
+	//def forkEnv = Map("--add-opens java.desktop/java.awt=ALL-UNNAMED")
+
   override def assemblyRules = Seq(
     Assembly.Rule.Exclude("timer.conf"),
     Assembly.Rule.Exclude("sizes.conf"),

@@ -21,6 +21,13 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.awt.Insets;
+import java.awt.geom.*;
+import java.lang.reflect.Field;
+
+import java.awt.Frame;
+
+import javax.swing.plaf.metal.MetalLookAndFeel;
+
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatLaf;
@@ -131,7 +138,7 @@ public class TaskTimer {
           timerApp.viewMode(absPath);
         }
         else{
-          timerApp.go();
+          timerApp.start();
         }
       }
     });
@@ -150,7 +157,6 @@ public class TaskTimer {
     var f = new JFrame(file);
     var time = System.currentTimeMillis();
     var fxPanel = new JFXPanel();
-    System.out.println("fx startup time:" + (System.currentTimeMillis() - enterMain));
     var viewTable = new TaskTable();
     f.add(fxPanel);
     fxPanel.repaint();
@@ -219,8 +225,8 @@ public class TaskTimer {
     checkIcon = new ImageIcon(newimg);
 
     // Cancel Task Button
-    cancelIcon = new ImageIcon(this.getClass().getResource("/png/cancel.png"));
-    newimg = cancelIcon.getImage().getScaledInstance(12, 12, java.awt.Image.SCALE_SMOOTH);
+    cancelIcon = new ImageIcon(this.getClass().getResource("/png/cancel2.png"));
+    newimg = cancelIcon.getImage().getScaledInstance(ICONSIZE, ICONSIZE, java.awt.Image.SCALE_SMOOTH);
     cancelIcon = new ImageIcon(newimg);
 
     // set up Exit dialog icon
@@ -326,11 +332,25 @@ public class TaskTimer {
 
   }
 
-  public void go() {
+	//Note that we use reflection here 
+  private static void undecorate(Frame frame) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    Field undecoratedField = Frame.class.getDeclaredField("undecorated");
+    undecoratedField.setAccessible(true);
+    undecoratedField.set(frame, true);
+  }
+
+
+  public void start() {
     preInit();
     var time = System.currentTimeMillis();
         // set up Application main ImageIcon
+        //
+		
+    JFrame.setDefaultLookAndFeelDecorated(true);
     frame = new JFrame("TaskTimer - " + TimerConf.project());
+    //frame.setUndecorated(true);
+	    //frame.setOpacity(0.7f);
+    //frame.setShape(new RoundRectangle2D.Double(4, 4, (double) WINSIZE_Y, (double) WINSIZE_X, 50, 50));
     appIcon = new ImageIcon(this.getClass().getResource("/png/appicon_96.png"));
     frame.setIconImage(appIcon.getImage());
     //Remove windows in build
@@ -349,22 +369,28 @@ public class TaskTimer {
 
     // Set up Task list window
     //listSelectionModel.addListSelectionListener(new TaskListListener());
+    //
+    var buttonInsets = new Insets(5,5,5,5);
 
     // Set up timer control buttons
     playBtn = new JButton(playIcon);
     playBtn.setBackground(ButtonColor);
     playBtn.addActionListener(new StartTimerListener());
     playBtn.setEnabled(false);
+    playBtn.setMargin(buttonInsets);
     pauseBtn = new JButton(pauseIcon);
     pauseBtn.setBackground(ButtonColor);
     pauseBtn.addActionListener(new PauseTimerListener());
+    pauseBtn.setMargin(buttonInsets);
     restartBtn = new JButton(restartIcon);
     restartBtn.setBackground(ButtonColor);
     restartBtn.addActionListener(new RestartListener());
+    restartBtn.setMargin(buttonInsets);
     checkButton = new JButton(checkIcon);
     checkButton.setBackground(ButtonColor);
     checkButton.addActionListener(new SubmitTaskListener());
     checkButton.setEnabled(false);
+    checkButton.setMargin(buttonInsets);
 
     Font f = new Font(Font.SANS_SERIF, Font.PLAIN, TASK_FONTSIZE);
     // Set up total work Label
@@ -498,7 +524,7 @@ public class TaskTimer {
     //
     var antIcons = new AntDesignIconsOutlinedIkonHandler();
     var antIconsFilled = new AntDesignIconsFilledIkonHandler();
-    taskDelButton = new JButton(FontIcon.of(antIcons.resolve("anto-delete"), 18, GREY));
+    taskDelButton = new JButton(FontIcon.of(antIcons.resolve("anto-delete"), 16, GREY));
     //taskDelButton.setFont(f);
     //taskDelButton.addActionListener(new TaskDeleteListener());
     taskDelButton.setBackground(ButtonColor);
@@ -510,7 +536,7 @@ public class TaskTimer {
       TaskIO.writeTasksJson(true, workName.getText() + ".mim", taskarr);
     });
         //taskDelButton.setEnabled(false);
-    undoButton = new JButton(FontIcon.of(antIcons.resolve("anto-rollback"), 18));
+    undoButton = new JButton(FontIcon.of(antIcons.resolve("anto-rollback"), 16));
     undoButton.setToolTipText("삭제 되돌리기");
     //var f = FontIcon.of(antIcons.resolve("anto-rollback"), 18);
     undoButton.setBackground(GREEN);
@@ -522,16 +548,39 @@ public class TaskTimer {
       var cur = TaskIO.writeTasksJson(true, workName.getText() + ".mim", taskArr);
       currFile = cur;
     });
-
     undoButton.setVisible(false);
+
 
     // Set up Window Pin buttons
     JToggleButton pinButton = new JToggleButton(pinIcon, false);
     pinButton.addItemListener(new PinListener());
     pinButton.setBackground(ButtonColor);
 
-    newButton = new JButton(FontIcon.of(antIconsFilled.resolve("antf-file"), 18));
+    //Set up auto repeat button
+    var autoRepeatButton = new JButton(FontIcon.of(antIcons.resolve("anto-sync"), 16));
+    var pinPanelBtnDims = pinButton.getPreferredSize();
+    autoRepeatButton.setText("R");
+    autoRepeatButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 8));
+    autoRepeatButton.setHorizontalTextPosition(JButton.CENTER);
+    autoRepeatButton.setVerticalTextPosition(JButton.CENTER);
+    autoRepeatButton.setPreferredSize(pinPanelBtnDims);
+    autoRepeatButton.setMargin(new Insets(0, 0, 0, 0));
+
+    var transpButton = new JToggleButton(FontIcon.of(antIcons.resolve("anto-eye"), 16));
+		transpButton.addItemListener((ItemEvent e) ->{
+      if(e.getStateChange() == ItemEvent.SELECTED){
+        frame.setOpacity(0.7f);
+      }
+      else{
+        frame.setOpacity(1f);
+      }
+    });
+
+    transpButton.setToolTipText("Toggle Transparency");
+
+    newButton = new JButton(FontIcon.of(antIconsFilled.resolve("antf-file"), 16));
     newButton.setBackground(ButtonColor);
+    //TODO: add English/Korean strings to a property file and fetch string according to lang setting
     newButton.setToolTipText("새 태스크 리스트 시작");
     newButton.addActionListener((ActionEvent e) -> {
       if (table.getLength() > 0) {
@@ -554,7 +603,7 @@ public class TaskTimer {
     });
 
     // Set up load list button
-    loadButton = new JButton(FontIcon.of(antIconsFilled.resolve("antf-folder-open"), 18));
+    loadButton = new JButton(FontIcon.of(antIconsFilled.resolve("antf-folder-open"), 16));
     loadButton.setBackground(ButtonColor);
     loadButton.addActionListener(new LoadListListener());
     loadButton.setToolTipText("파일 열기");
@@ -562,7 +611,7 @@ public class TaskTimer {
 
 
     // Set up save list button
-    saveButton = new JButton(FontIcon.of(antIconsFilled.resolve("antf-save"), 18));
+    saveButton = new JButton(FontIcon.of(antIconsFilled.resolve("antf-save"), 16));
     saveButton.setBackground(ButtonColor);
     saveButton.setToolTipText("파일 저장");
     saveButton.addActionListener(new SaveListListener());
@@ -577,8 +626,9 @@ public class TaskTimer {
 
     // Cancel Task Button
     cancelButton = new JButton(cancelIcon);
-    cancelButton.setBackground(RED);
+    cancelButton.setBackground(ButtonColor);
     cancelButton.setVisible(false);
+    cancelButton.setMargin(buttonInsets);
 
     cancelButton.addActionListener((ActionEvent e) -> {
       clock.reset();
@@ -603,14 +653,19 @@ public class TaskTimer {
     buttonList.add(checkButton);
     buttonList.add(restartBtn);
     buttonList.add(pauseBtn);
+    buttonList.add(cancelButton);
     buttonList.add(loadButton);
     buttonList.add(saveButton);
     buttonList.add(pinButton);
+    buttonList.add(autoRepeatButton);
+    buttonList.add(transpButton);
     buttonList.add(editNameButton);
     buttonList.add(goalButton);
 
     // Auto-repeat checkbox
     var openIcons = new OpeniconicIkonHandler();
+
+    //TODO change from checkbox to JButton and toggle (with Proper repeat "A" mark)
     autoRepeat = new JCheckBox("자동", false);
     autoRepeat.setBackground(BackColor);
     // repeatButton.setPreferredSize(new Dimension(64,64));
@@ -619,7 +674,6 @@ public class TaskTimer {
     cancelRepeatPanel.setBackground(BackColor);
     cancelRepeatPanel.setLayout(new BoxLayout(cancelRepeatPanel, BoxLayout.Y_AXIS));
     cancelRepeatPanel.setBorder(new EmptyBorder(12, 0, 0, 0));
-    cancelRepeatPanel.add(cancelButton);
     cancelRepeatPanel.add(Box.createVerticalStrut(2));
     cancelRepeatPanel.add(autoRepeat);
     cancelRepeatPanel.setPreferredSize(new Dimension(96, 64));
@@ -628,7 +682,7 @@ public class TaskTimer {
     timePanel.add(timeText);
     timePanel.add(playBtn);
     timePanel.add(restartBtn);
-    timePanel.add(cancelRepeatPanel);
+    timePanel.add(cancelButton);
     timePanel.setBackground(BackColor);
     timePanel.addMouseListener(new panelMouseListener());
     topPanel.add(timePanel);
@@ -636,6 +690,9 @@ public class TaskTimer {
 
     JPanel keypadPanel = new JPanel(new BorderLayout());
     keypadPanel.setBackground(BackColor);
+
+    //TODO: Toggle expanded and compact mode should be moved into the TaskButtonPanel class
+    //And TaskButtonPanel class should be renamed
     var downArrow = FontIcon.of(antIcons.resolve("anto-caret-down"),16);
     var rightArrow = FontIcon.of(antIcons.resolve("anto-caret-right"),16);
     JButton toggleKeypad = new JButton(downArrow);
@@ -645,7 +702,6 @@ public class TaskTimer {
     toggleKeypad.setContentAreaFilled(false);
     toggleKeypad.setBorder(BorderFactory.createEmptyBorder(2,4,2,2));
     toggleKeypad.setFocusPainted(false);
-       //var rowIcon = FontIcon.of(Openiconic.EXPAND_DOWN);
     var rowIcon = FontIcon.of(openIcons.resolve("oi-expand-up"),16);
     var gridIcon = FontIcon.of(openIcons.resolve("oi-grid-three-up"),16);
     JButton toggleCompact= new JButton(rowIcon);
@@ -713,6 +769,8 @@ public class TaskTimer {
     //timeZonePanel.add(taskDelButton);
 
     pinPanel.setBackground(BackColor);
+    pinPanel.add(autoRepeatButton);
+    pinPanel.add(transpButton);
     pinPanel.add(pinButton);
     bottomPanel.addMouseListener(new panelMouseListener());
     bottomPanel.add(BorderLayout.WEST, timeZonePanel);
@@ -786,6 +844,11 @@ public class TaskTimer {
     //frame.pack();
     frame.setLocation(TimerConf.posx(), TimerConf.posy());
     frame.setVisible(true);
+		try {
+			undecorate(frame); //Change it after frame is visible
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e1) {
+			e1.printStackTrace();
+		}
 
 
     var fxPanel = new JFXPanel();
@@ -903,9 +966,9 @@ public class TaskTimer {
         }
       }
     });
-      
     //Tooltip font
     UIManager.put("ToolTip.font", new javax.swing.plaf.FontUIResource("SansSerif", Font.PLAIN, 12));
+
 
   }
 
@@ -958,7 +1021,7 @@ public class TaskTimer {
     timePanel.add(timeText);
     timePanel.add(b);
     timePanel.add(restartBtn);
-    timePanel.add(cancelRepeatPanel);
+    timePanel.add(cancelButton);
     timePanel.revalidate();
     timePanel.repaint();
   }
@@ -1011,17 +1074,18 @@ public class TaskTimer {
         taskbar.setWindowProgressValue(frame, -1);
         taskbar.setWindowProgressState(frame, taskbarState);
       }
-      if (!autoRepeat.isSelected()) {
-        timeText.setEnabled(true);
-        checkButton.setEnabled(false);
-        cancelButton.setVisible(false);
-        playBtn.setEnabled(false);
-        checkButton.setBackground(ButtonColor);
-        swapButtons(playBtn);
-        timeText.setText("00:00");
-        keypad.setEnabled(true);
-        frame.requestFocus();
-      } else {
+      //TODO: handle the case where autorepeat is enabled
+      //if (!autoRepeat.isSelected()) {
+      timeText.setEnabled(true);
+      checkButton.setEnabled(false);
+      cancelButton.setVisible(false);
+      playBtn.setEnabled(false);
+      checkButton.setBackground(ButtonColor);
+      swapButtons(playBtn);
+      timeText.setText("00:00");
+      keypad.setEnabled(true);
+      frame.requestFocus();
+      /*} else {
         int s = clock.getCountSeconds();
         clock.stop();
         clock = new TaskClock(s, new ClockListener());
@@ -1032,7 +1096,7 @@ public class TaskTimer {
         checkButton.setEnabled(true);
         checkButton.setBackground(GREEN);
         keypad.setEnabled(false);
-      }
+      }*/
 
       // Add new task to list
       //updateTotalWorkLabel();
@@ -1208,6 +1272,7 @@ public class TaskTimer {
     public void actionPerformed(ActionEvent a) {
       clock.stop();
       aClip.stop();
+      keypad.setEnabled(true);
       timeText.setEnabled(true);
       checkButton.setEnabled(false);
       checkButton.setBackground(ButtonColor);
@@ -1222,7 +1287,6 @@ public class TaskTimer {
       TaskIO.autoSave(workName.getText(), getTotalWorkStr(), taskArr);
       currFile = TaskIO.writeTasksJson(true, workName.getText() + ".mim", taskArr);
       //goalProgress.setValue((int) getTotalWorkTime());
-      keypad.setEnabled(true);
       frame.requestFocus();
       frame.revalidate();
       frame.repaint();
