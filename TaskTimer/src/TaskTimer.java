@@ -197,33 +197,11 @@ public class TaskTimer {
     ButtonColor = Color.decode(colors.buttons());
     BackColor = Color.decode(colors.background());
     // set up "Play button"
-    playIcon = new ImageIcon(this.getClass().getResource("/png/play.png"));
-    Image newimg = playIcon.getImage().getScaledInstance(ICONSIZE, ICONSIZE, java.awt.Image.SCALE_SMOOTH);
-    playIcon = new ImageIcon(newimg);
-    // set up "restart icon"
-    restartIcon = new ImageIcon(this.getClass().getResource("/png/restart.png"));
-    newimg = restartIcon.getImage().getScaledInstance(ICONSIZE, ICONSIZE, java.awt.Image.SCALE_SMOOTH);
-    restartIcon = new ImageIcon(newimg);
-    // set up "pause icon"
-    pauseIcon = new ImageIcon(this.getClass().getResource("/png/pause.png"));
-    newimg = pauseIcon.getImage().getScaledInstance(ICONSIZE, ICONSIZE, java.awt.Image.SCALE_SMOOTH);
-    pauseIcon = new ImageIcon(newimg);
-
-    // Set up "Check" (Task Finish) Button
-    checkIcon = new ImageIcon(this.getClass().getResource("/png/check.png"));
-    newimg = checkIcon.getImage().getScaledInstance(ICONSIZE, ICONSIZE, java.awt.Image.SCALE_SMOOTH);
-    checkIcon = new ImageIcon(newimg);
-
-    // Cancel Task Button
-    cancelIcon = new ImageIcon(this.getClass().getResource("/png/cancel2.png"));
-    newimg = cancelIcon.getImage().getScaledInstance(ICONSIZE, ICONSIZE, java.awt.Image.SCALE_SMOOTH);
-    cancelIcon = new ImageIcon(newimg);
-
-    // set up Exit dialog icon
+        // set up Exit dialog icon
     exitDialogIcon = new ImageIcon(this.getClass().getResource("/png/sadcat.png"));
     // Set up Window Pin icon
     pinIcon = new ImageIcon(this.getClass().getResource("/png/pin.png"));
-    newimg = pinIcon.getImage().getScaledInstance(ICONSIZE / 2, ICONSIZE / 2, java.awt.Image.SCALE_SMOOTH);
+    Image newimg = pinIcon.getImage().getScaledInstance(ICONSIZE / 2, ICONSIZE / 2, java.awt.Image.SCALE_SMOOTH);
     pinIcon = new ImageIcon(newimg);
     // Set up Edit Name and Toggled Edit button
     editIcon = new ImageIcon(this.getClass().getResource("/png/edit2.png"));
@@ -630,11 +608,6 @@ public class TaskTimer {
 
     // Add buttons to arrayList for easy access
     buttonList = new ArrayList<AbstractButton>();
-    buttonList.add(playBtn);
-    buttonList.add(checkButton);
-    buttonList.add(restartBtn);
-    buttonList.add(pauseBtn);
-    buttonList.add(cancelButton);
     buttonList.add(loadButton);
     buttonList.add(saveButton);
     buttonList.add(pinButton);
@@ -899,28 +872,6 @@ public class TaskTimer {
     }
   }
 
-  private String sectoHrMinSec(int seconds) {
-    int hours = seconds / 60 / 60;
-    int minutes = (seconds / 60) - (hours * 60);
-    int secs = seconds % 60;
-    return String.format("%02d:%02d:%02d", hours, minutes, secs);
-  }
-
-
-  private String secondsToMinSec(int seconds) {
-    int minutes = seconds / 60;
-    int secs = seconds - (minutes * 60);
-    return String.format("%02d:%02d", minutes, secs);
-  }
-
-  private int minSectoSeconds(String s) {
-    String[] split = s.split(":");
-    int mins = Integer.parseInt(split[0]);
-    int secs = Integer.parseInt(split[1]);
-
-    return (mins * 60) + secs;
-  }
-
 //TODO: improve upon this and have a toggle button instead of swapping
   private void swapButtons(JButton b) {
     timePanel.removeAll();
@@ -962,7 +913,7 @@ public class TaskTimer {
         taskbar.setWindowProgressValue(frame, (int) progress);
         taskbar.setWindowProgressState(frame, taskbarState);
       }
-      timeText.setText(secondsToMinSec(clock.getTimeRemaining()));
+      timeText.setText(HelperFunctions.secondsToMinSec(clock.getTimeRemaining()));
       if (clock.getTimeRemaining() % 2 == 0) {
         Color clr = new Color(255, 79, 76);
         timeText.setDisabledTextColor(clr);
@@ -997,7 +948,7 @@ public class TaskTimer {
         clock = new TaskClock(s, new ClockListener());
         clock.start();
         swapButtons(pauseBtn);
-        timeText.setText(secondsToMinSec(clock.getCountSeconds()));
+        timeText.setText(HelperFunctions.secondsToMinSec(clock.getCountSeconds()));
         timeText.setEnabled(false);
         checkButton.setEnabled(true);
         checkButton.setBackground(GREEN);
@@ -1105,14 +1056,14 @@ public class TaskTimer {
         swapButtons(playBtn);
       }
       int time = 0;
-      time = minSectoSeconds(timeText.getText());
+      time = HelperFunctions.minSectoSeconds(timeText.getText());
       if (time > 0) {
         clock = new TaskClock(time, new ClockListener());
         playBtn.setEnabled(true);
       }
       frame.requestFocus();
       table.deselect();
-      timeText.setText(secondsToMinSec(time));
+      timeText.setText(HelperFunctions.secondsToMinSec(time));
       aClip.stop();
     }
   }
@@ -1162,7 +1113,7 @@ public class TaskTimer {
         clock = new TaskClock(s, new ClockListener());
         clock.start();
         swapButtons(pauseBtn);
-        timeText.setText(secondsToMinSec(clock.getCountSeconds()));
+        timeText.setText(HelperFunctions.secondsToMinSec(clock.getCountSeconds()));
         timeText.setEnabled(false);
         checkButton.setEnabled(true);
         checkButton.setBackground(GREEN);
@@ -1207,7 +1158,7 @@ public class TaskTimer {
   public class KeypadListener implements TaskButtonListener {
     public void buttonClicked(int seconds, int i) {
       clock = new TaskClock(seconds, new ClockListener());
-      timeText.setText(secondsToMinSec(seconds));
+      timeText.setText(HelperFunctions.secondsToMinSec(seconds));
       playBtn.setEnabled(true);
       table.deselect();
     }
@@ -1296,7 +1247,7 @@ public class TaskTimer {
       default -> "d";
     };
     if (total > 0) {
-      workLabel.setText(numTasks + "개" + " - " + sectoHrMinSec(total) + " - " + "" + s);
+      workLabel.setText(numTasks + "개" + " - " + HelperFunctions.sectoHrMinSec(total) + " - " + "" + s);
     } else {
       workLabel.setText("No tasks completed.");
     }
@@ -1309,7 +1260,7 @@ public class TaskTimer {
       var minstr = String.format("%.1f", HelperFunctions.sectoMin((int) total)) + " 분";
       var secstr = Integer.toString((int) total) + " 초";
       return "총: " + table.getLength() + "개" + " - "
-                                + sectoHrMinSec((int) total) + " ("
+                                + HelperFunctions.sectoHrMinSec((int) total) + " ("
                                 + " |" + hrstr + "| "
                                 + " |" + minstr + "| "
                                 + " |" + secstr + "| )";
