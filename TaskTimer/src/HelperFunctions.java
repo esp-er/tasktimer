@@ -1,5 +1,7 @@
 package patriker.tasktimer;
 
+import java.awt.Color;
+
 public class HelperFunctions{
   public static String sectoHrMinSec(int seconds) {
     int hours = seconds / 60 / 60;
@@ -23,6 +25,10 @@ public class HelperFunctions{
     int minutes = seconds / 60;
     int secs = seconds - (minutes * 60);
     return String.format("%02d:%02d", minutes, secs);
+  }
+
+  public static String getHex(java.awt.Color c) {
+    return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
   }
 
   public static int minSectoSeconds(String s) {

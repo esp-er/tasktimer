@@ -1,7 +1,8 @@
 package patriker.tasktimer;
 
 interface ClockTickListener{
-	void Tick();
 
-	void finishTick();
+  void Tick(int secondsRemaining);
+
+	void finalTick();
 }

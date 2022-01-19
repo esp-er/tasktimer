@@ -11,34 +11,28 @@ import java.awt.Taskbar;
 import java.awt.Taskbar.State;
 import java.awt.Toolkit;
 import java.awt.event.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.Insets;
+import java.awt.geom.*;
+import java.awt.Frame;
+
 import java.io.File;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.awt.Insets;
-import java.awt.geom.*;
+import java.util.List;
 import java.lang.reflect.Field;
-
-import java.awt.Frame;
-
-import javax.swing.plaf.metal.MetalLookAndFeel;
-
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatLaf;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.DataLine;
+import javax.sound.sampled.*;
+
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -90,16 +84,16 @@ public class TaskTimer {
   Taskbar taskbar = null;
   Taskbar.State taskbarState = Taskbar.State.OFF;
 
-  private JFormattedTextField timeText;
   private TaskClock clock;
 
-  private ImageIcon playIcon, restartIcon, pauseIcon, exitDialogIcon, pinIcon, checkIcon, editIcon, renameIcon,
-          cancelIcon, appIcon;
-  private JButton restartBtn, playBtn, pauseBtn, taskDelButton, loadButton, saveButton, checkButton, cancelButton, newButton, undoButton;
+  private ImageIcon exitDialogIcon, pinIcon, checkIcon, editIcon, renameIcon, appIcon;
+
+  private JButton taskDelButton, loadButton, saveButton, newButton, undoButton;
+
   private JToggleButton editNameButton, goalButton, autoRepeatButton;
   private ArrayList<AbstractButton> buttonList;
-  private JPanel timePanel, togglePane, workPanel, saveDelPanel, bottomPanel, topPanel, workNamePanel, pinPanel,
-          timeZonePanel;
+
+  private JPanel workPanel, saveDelPanel, bottomPanel, topPanel, workNamePanel, pinPanel, timeZonePanel;
   private Insets bottomButtonsInsets;
 
   private JProgressBar goalProgress;
@@ -115,9 +109,10 @@ public class TaskTimer {
   private TaskTimeZone currTimeZone;
 
   private KeyPad keypad;
+  private TimerGUI timergui;
 
   private static int lastKey;
-  private static long enterMain;
+  private static long enterMain; //for DEBUG info
   private int keyHeight = 98;
 
   //ScalaFX TaskTable
@@ -127,7 +122,6 @@ public class TaskTimer {
 
   public static void main(String[] args) {
     enterMain = System.currentTimeMillis();
-
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
       public void run() {
         TaskTimer timerApp = new TaskTimer();
@@ -160,10 +154,7 @@ public class TaskTimer {
     //var s = Toolkit.getDefaultToolkit().getScreenSize();
     //f.setLocation((int)s.getWidth() / 2 -250, (int)s.getHeight()/2 -280);
 
-
     f.setVisible(true);
-    //EXIT
-
     f.addWindowListener(new WindowAdapter() {
       @Override
       public void windowClosing(WindowEvent e){
@@ -180,7 +171,6 @@ public class TaskTimer {
       }
     });
 
-
   }
 
   private void preInit(){
@@ -194,22 +184,22 @@ public class TaskTimer {
     TASK_FONTSIZE = sizes.tasksize();
     ICONSIZE = sizes.iconsize();
 
+
     ButtonColor = Color.decode(colors.buttons());
     BackColor = Color.decode(colors.background());
-    // set up "Play button"
-        // set up Exit dialog icon
     exitDialogIcon = new ImageIcon(this.getClass().getResource("/png/sadcat.png"));
     // Set up Window Pin icon
+    var scaling = java.awt.Image.SCALE_SMOOTH;
     pinIcon = new ImageIcon(this.getClass().getResource("/png/pin.png"));
-    Image newimg = pinIcon.getImage().getScaledInstance(ICONSIZE / 2, ICONSIZE / 2, java.awt.Image.SCALE_SMOOTH);
+    Image newimg = pinIcon.getImage().getScaledInstance(ICONSIZE / 2, ICONSIZE / 2, scaling);
     pinIcon = new ImageIcon(newimg);
     // Set up Edit Name and Toggled Edit button
     editIcon = new ImageIcon(this.getClass().getResource("/png/edit2.png"));
-    newimg = editIcon.getImage().getScaledInstance(ICONSIZE / 2, ICONSIZE / 2, java.awt.Image.SCALE_SMOOTH);
+    newimg = editIcon.getImage().getScaledInstance(ICONSIZE / 2, ICONSIZE / 2, scaling);
     editIcon = new ImageIcon(newimg);
 
     renameIcon = new ImageIcon(this.getClass().getResource("/png/rename.png"));
-    newimg = renameIcon.getImage().getScaledInstance(ICONSIZE / 2, ICONSIZE / 2, java.awt.Image.SCALE_SMOOTH);
+    newimg = renameIcon.getImage().getScaledInstance(ICONSIZE / 2, ICONSIZE / 2, scaling);
     renameIcon = new ImageIcon(newimg);
 
     var keys = TimerConf.keyArr();
@@ -219,6 +209,23 @@ public class TaskTimer {
     // Init clock
     clock = new TaskClock();
 
+    timergui = new TimerGUI(new panelMouseListener());
+    timergui.addStartListener(new StartTimerListener());
+    timergui.addPauseListener(new PauseTimerListener());
+    timergui.addRestartListener(new RestartListener());
+    timergui.addSubmitListener(new SubmitTaskListener());
+    timergui.addCancelListener((ActionEvent e) -> {
+      clock.reset();
+      keypad.setEnabled(true);
+      if(taskbar != null){
+        taskbarState = State.OFF;
+        taskbar.setWindowProgressValue(frame, 0);
+        taskbar.setWindowProgressState(frame, taskbarState);
+      }
+    });
+    timergui.addFieldListener(new TimeTextListener());
+
+    //SETUP AUDIO
     try {
       AudioInputStream aStream = AudioSystem.getAudioInputStream(this.getClass().getResource("/audio/alarm.wav"));
       AudioFormat format = aStream.getFormat();
@@ -242,38 +249,40 @@ public class TaskTimer {
     menuitem = new JMenuItem("Edit Button Color", editBtnIcon);
     menuitem.addActionListener(new KeypadColorListener());
     keypadPopup.add(menuitem);
-    
+
     editBtnIcon = new ImageIcon(this.getClass().getResource("/png/colors.png"));
     newimg = editBtnIcon.getImage().getScaledInstance(24, 24, java.awt.Image.SCALE_SMOOTH);
     editBtnIcon = new ImageIcon(newimg);
     JMenuItem menuitem2 = new JMenuItem("Edit Background Color", editBtnIcon);
     backgroundPopup = new JPopupMenu();
+
     menuitem2.addActionListener((ActionEvent e) -> {
       Color newColor = JColorChooser.showDialog(null, "Choose a color", BackColor);
       if (newColor != null) {
         BackColor = newColor;
 
         var p = new Point(0,0);
-        if(frame != null && frame.isVisible()) p = frame.getLocationOnScreen();
-        TimerConf.write(workName.getText(), keypad.getButtonList(), getHex(BackColor), getHex(ButtonColor), p.x, p.y, currFile);
+        if(frame != null && frame.isVisible())
+          p = frame.getLocationOnScreen();
 
-        timePanel.setBackground(newColor);
+        TimerConf.write(workName.getText(), keypad.getButtonList(), HelperFunctions.getHex(BackColor), HelperFunctions.getHex(ButtonColor), p.x, p.y, currFile);
+
+        timergui.timePanel.setBackground(newColor);
+        keypad.setBackground(newColor);
         workPanel.setBackground(newColor);
         saveDelPanel.setBackground(newColor);
         workNamePanel.setBackground(newColor);
         pinPanel.setBackground(newColor);
         timeZonePanel.setBackground(newColor);
         goalProgress.setBackground(newColor);
-        table.setAccentColor(getHex(newColor));
+        table.setAccentColor(HelperFunctions.getHex(newColor));
       }
     });
     backgroundPopup.add(menuitem2);
 
-
   }
 
   private boolean continueDialog(String pName, String fPath){
-
     String ObjButtons[] = { "계속 하기", "새 리스트 만들기" };
     JLabel text = new JLabel("저장된 " + pName + " (위치 : " + fPath + "  ) " + "\n" +
         "계속 할거예요? 새로 시작할거예요? ");
@@ -294,15 +303,6 @@ public class TaskTimer {
        }*/
 
   }
-
-	//Note that we use reflection "hack" here
-  private static void undecorate(Frame frame) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-    Field undecoratedField = Frame.class.getDeclaredField("undecorated");
-    undecoratedField.setAccessible(true);
-    undecoratedField.set(frame, true);
-  }
-
-
   //TODO: Split this long function into several (related) parts
   public void start() {
     preInit();
@@ -314,8 +314,6 @@ public class TaskTimer {
     frame.setIconImage(appIcon.getImage());
     //Remove windows in build
     frame.addKeyListener(new KeyboardListener());
-    timePanel = new JPanel();
-    timePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 10));
     JPanel buttonPanel = new JPanel(new GridLayout(3, 4));
     topPanel = new JPanel();
 
@@ -324,46 +322,20 @@ public class TaskTimer {
       taskbar = Taskbar.getTaskbar();
       taskbar.setWindowProgressState(frame, taskbarState);
     }
-
-    // Set up Task list window
-    var buttonInsets = new Insets(5,5,5,5);
-
-    // Set up timer control buttons
-    playBtn = new JButton(playIcon);
-    playBtn.setBackground(ButtonColor);
-    playBtn.addActionListener(new StartTimerListener());
-    playBtn.setEnabled(false);
-    playBtn.setMargin(buttonInsets);
-    pauseBtn = new JButton(pauseIcon);
-    pauseBtn.setBackground(ButtonColor);
-    pauseBtn.addActionListener(new PauseTimerListener());
-    pauseBtn.setMargin(buttonInsets);
-    restartBtn = new JButton(restartIcon);
-    restartBtn.setBackground(ButtonColor);
-    restartBtn.addActionListener(new RestartListener());
-    restartBtn.setMargin(buttonInsets);
-    checkButton = new JButton(checkIcon);
-    checkButton.setBackground(ButtonColor);
-    checkButton.addActionListener(new SubmitTaskListener());
-    checkButton.setEnabled(false);
-    checkButton.setMargin(buttonInsets);
-
     Font f = new Font(Font.SANS_SERIF, Font.PLAIN, TASK_FONTSIZE);
-    // Set up total work Label
+
+    // Set up Total Work Label
     workLabel = new JTextField("No tasks completed.", SwingConstants.CENTER);
     workLabel.setHorizontalAlignment(SwingConstants.CENTER);
     workLabel.setEditable(false);
     workLabel.setBackground(new Color(255,255,255));
-    // workLabel.setPreferredSize(new Dimension(480,30));
-    // workLabel.setMinimumSize(new Dimension(200,30));
     workLabel.setFont(f);
 
     // Progress Goals Toggle button
     ImageIcon goalsIcon = new ImageIcon(this.getClass().getResource("/png/goal.png"));
     ImageIcon goalsIconDialog = new ImageIcon(
     goalsIcon.getImage().getScaledInstance(ICONSIZE, ICONSIZE, java.awt.Image.SCALE_SMOOTH));
-    goalsIcon = new ImageIcon(
-        goalsIcon.getImage().getScaledInstance(ICONSIZE / 2, ICONSIZE / 2, java.awt.Image.SCALE_SMOOTH));
+    goalsIcon = new ImageIcon(goalsIcon.getImage().getScaledInstance(ICONSIZE / 2, ICONSIZE / 2, java.awt.Image.SCALE_SMOOTH));
     goalButton = new JToggleButton(goalsIcon);
     goalButton.setPreferredSize(new Dimension(28, 28));
     goalButton.addActionListener((ActionEvent e) -> {
@@ -440,7 +412,7 @@ public class TaskTimer {
       frame.requestFocus();
       var p = new Point(0,0);
       if(frame != null && frame.isVisible()) p = frame.getLocationOnScreen();
-      TimerConf.write(workName.getText(), keypad.getButtonList(), getHex(BackColor), getHex(ButtonColor), p.x, p.y, currFile);
+      TimerConf.write(workName.getText(), keypad.getButtonList(), HelperFunctions.getHex(BackColor), HelperFunctions.getHex(ButtonColor), p.x, p.y, currFile);
     });
     editNameButton.setBackground(ButtonColor);
     editNameButton.setSelectedIcon(renameIcon);
@@ -459,7 +431,7 @@ public class TaskTimer {
         frame.requestFocus();
         var p = new Point(0,0);
         if(frame != null && frame.isVisible()) p = frame.getLocationOnScreen();
-        TimerConf.write(workName.getText(), keypad.getButtonList(), getHex(BackColor), getHex(ButtonColor), p.x, p.y, currFile);
+        TimerConf.write(workName.getText(), keypad.getButtonList(), HelperFunctions.getHex(BackColor), HelperFunctions.getHex(ButtonColor), p.x, p.y, currFile);
       }
     });
 
@@ -479,15 +451,11 @@ public class TaskTimer {
     currTimeZone = (TaskTimeZone) timeZonePicker.getItemAt(0);
 
     // Set up Delete and Save task Buttons
-    //FontIcon delFontIcon = new FontIcon("antf-delete:32");
-    //
     var antIcons = new AntDesignIconsOutlinedIkonHandler();
     var antIconsFilled = new AntDesignIconsFilledIkonHandler();
     taskDelButton = new JButton(FontIcon.of(antIcons.resolve("anto-delete"), 16, GREY));
-    //taskDelButton.setFont(f);
-    //taskDelButton.addActionListener(new TaskDeleteListener());
+    //
     taskDelButton.setBackground(ButtonColor);
-    //var f  = FontIcon.of(antIcons.resolve("anto-delete"), 18);
     taskDelButton.addActionListener((ActionEvent e) -> {
       table.removeItem();
       var taskarr = table.getTaskArray();
@@ -497,7 +465,6 @@ public class TaskTimer {
         //taskDelButton.setEnabled(false);
     undoButton = new JButton(FontIcon.of(antIcons.resolve("anto-rollback"), 16));
     undoButton.setToolTipText("삭제 되돌리기");
-    //var f = FontIcon.of(antIcons.resolve("anto-rollback"), 18);
     undoButton.setBackground(GREEN);
 
     undoButton.addActionListener((ActionEvent e) -> {
@@ -511,8 +478,13 @@ public class TaskTimer {
 
 
     // Set up Window Pin buttons
-    JToggleButton pinButton = new JToggleButton(pinIcon, false);
-    pinButton.addItemListener(new PinListener());
+    var pinButton = new JToggleButton(pinIcon, false);
+    pinButton.addItemListener((ItemEvent ev) -> {
+      if (ev.getStateChange() == ItemEvent.SELECTED) 
+        frame.setAlwaysOnTop(true);
+      else if (ev.getStateChange() == ItemEvent.DESELECTED) 
+        frame.setAlwaysOnTop(false);
+    });
     pinButton.setBackground(ButtonColor);
 
     //Set up auto repeat button
@@ -576,55 +548,13 @@ public class TaskTimer {
     saveButton.addActionListener(new SaveListListener());
 
     topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
-    DateFormat format = new SimpleDateFormat("mm:ss");
-    timeText = new JFormattedTextField(format);
-    f = new Font(Font.MONOSPACED, Font.BOLD, TIMER_FONTSIZE);
-    timeText.setFont(f);
-    timeText.setText("00:00");
-    timeText.addActionListener(new TimeTextListener());
-
-    // Cancel Task Button
-    cancelButton = new JButton(cancelIcon);
-    cancelButton.setBackground(ButtonColor);
-    cancelButton.setVisible(false);
-    cancelButton.setMargin(buttonInsets);
-
-    cancelButton.addActionListener((ActionEvent e) -> {
-      clock.reset();
-      timeText.setText("00:00");
-      timeText.setEnabled(true);
-      keypad.setEnabled(true);
-      swapButtons(playBtn);
-      playBtn.setEnabled(true);
-      checkButton.setEnabled(false);
-      checkButton.setBackground(ButtonColor);
-      cancelButton.setVisible(false);
-      if(taskbar != null){
-        taskbarState = State.OFF;
-        taskbar.setWindowProgressValue(frame, 0);
-        taskbar.setWindowProgressState(frame, taskbarState);
-      }
-    });
 
     // Add buttons to arrayList for easy access
     buttonList = new ArrayList<AbstractButton>();
-    buttonList.add(loadButton);
-    buttonList.add(saveButton);
-    buttonList.add(pinButton);
-    buttonList.add(autoRepeatButton);
-    buttonList.add(transpButton);
-    buttonList.add(editNameButton);
-    buttonList.add(goalButton);
+    buttonList.addAll(List.of(loadButton, saveButton, pinButton, autoRepeatButton, transpButton,
+                      editNameButton, goalButton));
 
-    timePanel.add(checkButton);
-    timePanel.add(timeText);
-    timePanel.add(playBtn);
-    timePanel.add(restartBtn);
-    timePanel.add(cancelButton);
-    timePanel.setBackground(BackColor);
-    timePanel.addMouseListener(new panelMouseListener());
-    topPanel.add(timePanel);
-    timeText.setMaximumSize(timeText.getPreferredSize());
+    topPanel.add(timergui.timePanel);
 
     JPanel keypadPanel = new JPanel(new BorderLayout());
     keypadPanel.setBackground(BackColor);
@@ -747,7 +677,7 @@ public class TaskTimer {
     var fxPanel = new JFXPanel();
     table = new TaskTable();
     table.init(fxPanel, time, false);
-    table.setAccentColor(getHex(BackColor));
+    table.setAccentColor(HelperFunctions.getHex(BackColor));
     frame.getContentPane().add(BorderLayout.CENTER, fxPanel);
 
     table.setHeight(Double.valueOf(dim.height) - topHeight - bottomHeight - 36.0);
@@ -762,7 +692,6 @@ public class TaskTimer {
 
     table.totalDeletedProp().addListener( (obs, oldx, newx) -> {
       if(newx.intValue() > 0){
-        //undoButton.setIcon(FontIcon.of(antIcons.resolve("anto-rollback"), 18));
         undoButton.setText(newx.intValue() + "");
         undoButton.setEnabled(true);
         undoButton.setVisible(true);
@@ -783,7 +712,6 @@ public class TaskTimer {
         int width =
             taskDelButton.getFontMetrics(taskDelButton.getFont()).stringWidth(String.valueOf("1"));
         taskDelButton.setIcon(FontIcon.of(antIcons.resolve("anto-delete"), iconSize));
-        //taskDelButton.setPreferredSize(new Dimension(iconSize + width, dim.height));
         taskDelButton.setText("");
         taskDelButton.setMargin(bottomButtonsInsets);
         taskDelButton.setEnabled(true);
@@ -792,14 +720,12 @@ public class TaskTimer {
         int width =
             taskDelButton.getFontMetrics(taskDelButton.getFont()).stringWidth(String.valueOf(newx.intValue()));
         taskDelButton.setIcon(FontIcon.of(antIcons.resolve("anto-delete"), iconSize));
-        //taskDelButton.setPreferredSize(new Dimension(dim.width * 2 +10, dim.height));
         taskDelButton.setMargin(new Insets(2,8,2,8));
         taskDelButton.setText(newx.intValue() + "");
         taskDelButton.setEnabled(true);
       }
       else{
         taskDelButton.setIcon(FontIcon.of(antIcons.resolve("anto-delete"), iconSize, GREY));
-        //taskDelButton.setPreferredSize(saveButton.getPreferredSize());
         taskDelButton.setEnabled(false);
         taskDelButton.setMargin(bottomButtonsInsets);
         taskDelButton.setText("");
@@ -829,7 +755,7 @@ public class TaskTimer {
           if (PromptResult == JOptionPane.NO_OPTION) {
           var p = new Point(0,0);
           if(frame != null && frame.isVisible()) p = frame.getLocationOnScreen();
-            TimerConf.write(workName.getText(), keypad.getButtonList(), getHex(BackColor), getHex(ButtonColor), p.x, p.y, currFile);
+            TimerConf.write(workName.getText(), keypad.getButtonList(), HelperFunctions.getHex(BackColor), HelperFunctions.getHex(ButtonColor), p.x, p.y, currFile);
             System.exit(0);
           }
           else if(PromptResult == JOptionPane.CLOSED_OPTION){
@@ -858,8 +784,6 @@ public class TaskTimer {
     });
     //Tooltip font
     UIManager.put("ToolTip.font", new javax.swing.plaf.FontUIResource("SansSerif", Font.PLAIN, 12));
-
-
   }
 
   public static void setUIFont(javax.swing.plaf.FontUIResource f) {
@@ -872,31 +796,9 @@ public class TaskTimer {
     }
   }
 
-//TODO: improve upon this and have a toggle button instead of swapping
-  private void swapButtons(JButton b) {
-    timePanel.removeAll();
-    timePanel.add(checkButton);
-    timePanel.add(timeText);
-    timePanel.add(b);
-    timePanel.add(restartBtn);
-    timePanel.add(cancelButton);
-    timePanel.revalidate();
-    timePanel.repaint();
-  }
-
-  public class PinListener implements ItemListener {
-    public void itemStateChanged(ItemEvent ev) {
-      if (ev.getStateChange() == ItemEvent.SELECTED) {
-        frame.setAlwaysOnTop(true);
-      } else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-        frame.setAlwaysOnTop(false);
-      }
-    }
-  }
-
   public class KeyboardListener implements KeyListener {
     public void keyPressed(KeyEvent e){}
-    //NOTE: REMOVE IN WINDOWS BUILD!
+    //TODO: REMOVE IN WINDOWS BUILD!
     public void keyReleased(KeyEvent e) {
       if(e.getKeyCode()== KeyEvent.VK_ESCAPE)
         System.exit(0);
@@ -906,65 +808,43 @@ public class TaskTimer {
   }
 
   public class ClockListener implements ClockTickListener {
-    public void Tick() {
+
+    public void Tick(int secRemaining) {
       long progress = Math.round((double)clock.getTimeRemaining() / clock.getCountSeconds() * 100);
       if(taskbar != null){
         taskbarState = State.NORMAL;
         taskbar.setWindowProgressValue(frame, (int) progress);
         taskbar.setWindowProgressState(frame, taskbarState);
       }
-      timeText.setText(HelperFunctions.secondsToMinSec(clock.getTimeRemaining()));
-      if (clock.getTimeRemaining() % 2 == 0) {
-        Color clr = new Color(255, 79, 76);
-        timeText.setDisabledTextColor(clr);
-      } else {
-        timeText.setDisabledTextColor(new Color(169, 169, 169));
-      }
     }
 
-    public void finishTick() {
-      aClip.setFramePosition(0);
-      aClip.start();
-      var t = Task.apply(workName.getText(), clock.getCountSeconds(), currTimeZone, getHex(BackColor), getHex(ButtonColor));
+    public void finalTick() {
+            var t = Task.apply(workName.getText(), clock.getCountSeconds(), currTimeZone, HelperFunctions.getHex(BackColor), HelperFunctions.getHex(ButtonColor));
       table.addItem(t);
       if(taskbar != null){
         taskbarState = State.ERROR;
         taskbar.setWindowProgressValue(frame, -1);
         taskbar.setWindowProgressState(frame, taskbarState);
       }
-      if (!autoRepeatButton.isSelected()) {
-      timeText.setEnabled(true);
-      checkButton.setEnabled(false);
-      cancelButton.setVisible(false);
-      playBtn.setEnabled(false);
-      checkButton.setBackground(ButtonColor);
-      swapButtons(playBtn);
-      timeText.setText("00:00");
-      keypad.setEnabled(true);
-      frame.requestFocus();
-      } else {
-        int s = clock.getCountSeconds();
-        clock.stop();
-        clock = new TaskClock(s, new ClockListener());
-        clock.start();
-        swapButtons(pauseBtn);
-        timeText.setText(HelperFunctions.secondsToMinSec(clock.getCountSeconds()));
-        timeText.setEnabled(false);
-        checkButton.setEnabled(true);
-        checkButton.setBackground(GREEN);
-        keypad.setEnabled(false);
-      }
 
-      // Add new task to list
-      //updateTotalWorkLabel();
+      if (!autoRepeatButton.isSelected()) {
+        timergui.setText("00:00");
+        keypad.setEnabled(true);
+        frame.requestFocus();
+      } 
+      else {
+        timergui.fireRestart();
+      }
       //AutoSave
       Task[] taskArr = table.getTaskArray();
       TaskIO.autoSave(workName.getText(), getTotalWorkStr(), taskArr);
       String cur = TaskIO.writeTasksJson(true, workName.getText() + ".mim", taskArr);
-      currFile = cur;
+      //currFile = cur;
+      aClip.stop();
+      aClip.setFramePosition(0);
+      aClip.setMicrosecondPosition(0);
+      aClip.start();
 
-      frame.revalidate();
-      frame.repaint();
     }
   }
 
@@ -997,87 +877,24 @@ public class TaskTimer {
         //TaskIO.saveTasks(tmp.getAbsolutePath() + ".txt", getTotalWorkStr(), taskArr);
     }
   }
-
-  public class LoadListListener implements ActionListener{
-    public void actionPerformed(ActionEvent a){
-      /*
-        JFileChooser fileLoadDiag = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Text file", "txt");
-        fileLoadDiag.addChoosableFileFilter(filter);
-        fileLoadDiag.setFileFilter(filter);
-        fileLoadDiag.showOpenDialog(frame);
-        File inFile = fileLoadDiag.getSelectedFile();
-        var list = TaskIO.loadTasks(inFile.getAbsolutePath());
-
-        var loadTasks = new JList(list.tasks());
-        var scroll = new JScrollPane(loadTasks);
-        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        //scroll.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 6));
-
-        var f = new JFrame();
-        f.setBackground(BackColor);
-        var dia = new JDialog(f, "Open Tasks: " + inFile.getAbsolutePath(),true);
-        dia.setBackground(BackColor);
-        dia.setLayout(new BorderLayout());
-
-        var diaWidth = WINSIZE_X;
-        var diaHeight = WINSIZE_Y;
-        dia.setSize(diaWidth,diaHeight);
-
-        var fon = new Font(Font.SANS_SERIF, Font.PLAIN, TASK_FONTSIZE);
-        var totalLabel = new JTextField(list.label(), SwingConstants.CENTER);
-        totalLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        var filNameLabel = new JLabel("파일: " + inFile.getAbsolutePath());
-        filNameLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
-        f.add(filNameLabel);
-        totalLabel.setFont(fon);
-        totalLabel.setEditable(false);
-        loadTasks.setFont(fon);
-
-        var antIconsFilled = new AntDesignIconsFilledIkonHandler();
-        var close = new JButton(FontIcon.of(antIconsFilled.resolve("antf-close-square"), 18));
-        var closePan = new JPanel(new FlowLayout());
-        closePan.add(close);
-        close.setBackground(ButtonColor);
-        close.addActionListener((ActionEvent e) -> dia.dispose());
-
-        dia.add(BorderLayout.NORTH, totalLabel);
-        dia.add(BorderLayout.CENTER, scroll);
-        dia.add(BorderLayout.SOUTH, closePan);
-        dia.setVisible(true);
-        */
-    }
-  }
-
   public class TimeTextListener implements ActionListener {
     public void actionPerformed(ActionEvent a) {
-      if (clock.isPaused()) {
-        swapButtons(playBtn);
-      }
-      int time = 0;
-      time = HelperFunctions.minSectoSeconds(timeText.getText());
+      var time = HelperFunctions.minSectoSeconds(timergui.getText());
       if (time > 0) {
-        clock = new TaskClock(time, new ClockListener());
-        playBtn.setEnabled(true);
+        //TODO: Add timerguis listener
+        clock = new TaskClock(time, List.of(timergui.getTimerListener(), new ClockListener()));
       }
       frame.requestFocus();
       table.deselect();
-      timeText.setText(HelperFunctions.secondsToMinSec(time));
+      //timergui.setText(HelperFunctions.secondsToMinSec(time));
       aClip.stop();
     }
   }
 
   public class StartTimerListener implements ActionListener {
     public void actionPerformed(ActionEvent a) {
-      if (clock.getCountSeconds() > 0) {
         clock.start();
-        timeText.setEnabled(false);
         keypad.setEnabled(false);
-        cancelButton.setVisible(true);
-        swapButtons(pauseBtn);
-        checkButton.setEnabled(true);
-        checkButton.setBackground(GREEN);
         table.deselect();
         aClip.stop();
         if(taskbar != null){
@@ -1087,7 +904,6 @@ public class TaskTimer {
             taskbar.setWindowProgressValue(frame, 100);
           }
         }
-      }
     }
   }
 
@@ -1098,10 +914,7 @@ public class TaskTimer {
         taskbarState = State.PAUSED;
         taskbar.setWindowProgressState(frame, taskbarState);
       }
-      timeText.setEnabled(true);
       keypad.setEnabled(true);
-      swapButtons(playBtn);
-      playBtn.setEnabled(true);
     }
   }
 
@@ -1110,14 +923,9 @@ public class TaskTimer {
       if(clock.getCountSeconds() != 0){
         int s = clock.getCountSeconds();
         clock.stop();
-        clock = new TaskClock(s, new ClockListener());
+        clock = new TaskClock(s, List.of(timergui.getTimerListener(), new ClockListener()));
+        timergui.setText(HelperFunctions.secondsToMinSec(clock.getCountSeconds()));
         clock.start();
-        swapButtons(pauseBtn);
-        timeText.setText(HelperFunctions.secondsToMinSec(clock.getCountSeconds()));
-        timeText.setEnabled(false);
-        checkButton.setEnabled(true);
-        checkButton.setBackground(GREEN);
-        cancelButton.setVisible(true);
         keypad.setEnabled(false);
         table.deselect();
         aClip.stop();
@@ -1130,16 +938,12 @@ public class TaskTimer {
       clock.stop();
       aClip.stop();
       keypad.setEnabled(true);
-      timeText.setEnabled(true);
-      checkButton.setEnabled(false);
-      checkButton.setBackground(ButtonColor);
-      cancelButton.setVisible(false);
-      swapButtons(playBtn);
-      playBtn.setEnabled(false);
-      timeText.setText("00:00");
       // Add new task to list
-      table.addItem(Task.apply(workName.getText(), clock.getCountSeconds(), currTimeZone, getHex(BackColor), getHex(ButtonColor)));
-      //AutoSave
+      table.addItem(Task.apply(workName.getText(), clock.getCountSeconds(), currTimeZone, HelperFunctions.getHex(BackColor), HelperFunctions.getHex(ButtonColor)));
+      if(autoRepeatButton.isSelected())
+        autoRepeatButton.setSelected(false);
+
+      //AutoSave functionality
       Task[] taskArr = table.getTaskArray();
       TaskIO.autoSave(workName.getText(), getTotalWorkStr(), taskArr);
       currFile = TaskIO.writeTasksJson(true, workName.getText() + ".mim", taskArr);
@@ -1151,16 +955,12 @@ public class TaskTimer {
         taskbarState = State.OFF;
         taskbar.setWindowProgressState(frame, taskbarState);
       }
-
     }
   }
 
   public class KeypadListener implements TaskButtonListener {
     public void buttonClicked(int seconds, int i) {
-      clock = new TaskClock(seconds, new ClockListener());
-      timeText.setText(HelperFunctions.secondsToMinSec(seconds));
-      playBtn.setEnabled(true);
-      table.deselect();
+        timergui.setText(HelperFunctions.secondsToMinSec(seconds));
     }
 
     public void rightClick(int i, MouseEvent e) {
@@ -1172,7 +972,6 @@ public class TaskTimer {
   public class EditButtonListener implements ActionListener {
     public void actionPerformed(ActionEvent a) {
       String newButtonCount = JOptionPane.showInputDialog("Edit Button # seconds", keypad.getButtonSecs(lastKey));
-
       if (newButtonCount != null) {
         try {
           int sec = Integer.parseInt(newButtonCount);
@@ -1181,7 +980,7 @@ public class TaskTimer {
         } finally {
           var p = new Point(0,0);
           if(frame != null && frame.isVisible()) p = frame.getLocationOnScreen();
-          TimerConf.write(workName.getText(), keypad.getButtonList(), getHex(BackColor), getHex(ButtonColor), p.x, p.y, currFile);
+          TimerConf.write(workName.getText(), keypad.getButtonList(), HelperFunctions.getHex(BackColor), HelperFunctions.getHex(ButtonColor), p.x, p.y, currFile);
         }
       }
     }
@@ -1197,12 +996,19 @@ public class TaskTimer {
         setBackgroundAllButtons(newColor);
         var p = new Point(0,0);
         if(frame != null && frame.isVisible()) p = frame.getLocationOnScreen();
-        TimerConf.write(workName.getText(), keypad.getButtonList(), getHex(BackColor), getHex(ButtonColor), p.x, p.y, currFile);
+        TimerConf.write(workName.getText(), keypad.getButtonList(), HelperFunctions.getHex(BackColor), HelperFunctions.getHex(ButtonColor), p.x, p.y, currFile);
       }
     }
   }
 
-  public class panelMouseListener implements MouseListener {
+	//Note that we use reflection "hack" here
+  private static void undecorate(Frame frame) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    Field undecoratedField = Frame.class.getDeclaredField("undecorated");
+    undecoratedField.setAccessible(true);
+    undecoratedField.set(frame, true);
+  }
+
+  private class panelMouseListener implements MouseListener {
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}
     public void mouseClicked(MouseEvent e) {}
@@ -1218,19 +1024,13 @@ public class TaskTimer {
       }
     }
   }
-  public class tempDeselectListener implements MouseListener {
-    public void mouseEntered(MouseEvent e) {}
-    public void mouseExited(MouseEvent e) {}
-    public void mouseClicked(MouseEvent e) {}
-    public void mouseReleased(MouseEvent e) {}
+  private class tempDeselectListener extends panelMouseListener{
     @Override
     public void mousePressed(MouseEvent e) {
-      if(e.getButton() == MouseEvent.BUTTON1){
+      if(e.getButton() == MouseEvent.BUTTON1)
         table.deselect();
-      }
     }
   }
-
 
   private void setBackgroundAllButtons(Color newColor) {
     for (AbstractButton b : buttonList)
@@ -1238,6 +1038,7 @@ public class TaskTimer {
     taskDelButton.setBackground(newColor);
     newButton.setBackground(newColor);
     goalProgress.setForeground(newColor);
+    if(timergui != null) timergui.setButtonColor(newColor);
   }
   private void updateTotalWorkLabel(int total, int numTasks) {
     String s = switch ((String) unitPicker.getSelectedItem()) {
@@ -1253,8 +1054,16 @@ public class TaskTimer {
     }
   }
 
+  private int getTotalWork(){
+    if(this.table != null) return table.getTotalWork(); else return 0;
+  }
+
+  private int getTotalTasks(){
+    if(this.table != null) return table.getTotalTasks(); else return 0;
+  }
+
   private String getTotalWorkStr(){
-    int total = getTotalWork();
+    var total = getTotalWork();
     if (total > 0){
       var hrstr = String.format("%.3f", HelperFunctions.sectoHr((int) total)) + " 시간";
       var minstr = String.format("%.1f", HelperFunctions.sectoMin((int) total)) + " 분";
@@ -1271,41 +1080,4 @@ public class TaskTimer {
     }
   }
 
-
-  private int getTotalTasks(){
-    if(table != null)
-      return table.totalTasksProp().intValue();
-    else return 0;
-  }
-
-  private int getTotalWork(){
-    if (table != null)
-      return table.totalWorkProp().intValue();
-    else
-      return 0;
-  }
-
-  private String getHex(java.awt.Color c) {
-    return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
-  }
-
-  @FunctionalInterface
-  public interface SimpleDocumentListener extends DocumentListener {
-    void update(DocumentEvent e);
-
-    @Override
-    default void insertUpdate(DocumentEvent e) {
-      update(e);
-    }
-
-    @Override
-    default void removeUpdate(DocumentEvent e) {
-      update(e);
-    }
-
-    @Override
-    default void changedUpdate(DocumentEvent e) {
-      update(e);
-    }
-  }
 }

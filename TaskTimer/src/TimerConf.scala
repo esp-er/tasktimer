@@ -55,7 +55,7 @@ object TimerConf{
 
   val keypad = timerSrc match{
     case Right(TimerConfig(_,_,keypad,_,_)) => keypad
-    case _ => List.fill(9)("0s")
+    case _ => List("60s", "90s", "120s", "180s", "240s", "300s", "360s", "420s", "900s");
   }
 
   val project = timerSrc match{

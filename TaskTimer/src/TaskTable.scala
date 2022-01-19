@@ -142,6 +142,14 @@ class TaskTable{
   def getLength(): Int = taskBuffer.length
 
   def getTaskArray(): Array[Task] = taskBuffer.toArray[Task]
+  
+  def getTotalTasks(): Int = {
+      totalTasksProp.intValue
+  }
+
+  def getTotalWork(): Int = {
+      totalWorkProp.intValue
+  }
 
   private val sampleContextMenu = new ContextMenu {
     items ++= Seq(

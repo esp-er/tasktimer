@@ -41,6 +41,7 @@ public class KeyPad{
 
     buttonColor = TaskTimer.ButtonColor;
     backgroundColor = TaskTimer.BackColor;
+    buttonPanel.setBackground(backgroundColor);
 
     var i = 0;
     for(String b : buttons){
@@ -113,6 +114,13 @@ public class KeyPad{
 
     return resultPanel;
 
+  }
+
+  public void setBackground(Color c){
+    toggleHide.setBackground(c);
+    toggleCompact.setBackground(c);
+    togglePanel.setBackground(c);
+    buttonPanel.setBackground(c);
   }
 
   public void setEnabled(boolean value){
