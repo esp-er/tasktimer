@@ -2,7 +2,6 @@
 # Compiled class file
 *.class
 
-
 # Log file
 *.log
 
@@ -12,9 +11,14 @@
 #mill out
 out/**
 
+#temp
+tmp/**
+
 #other folders
 backup/**
 jar/**
+sync/**
+**/.metals/**
 .metals/**
 .bloop/**
 tmp/**

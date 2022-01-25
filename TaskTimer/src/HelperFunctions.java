@@ -41,5 +41,9 @@ public class HelperFunctions{
 
   public static String hrStr(int total){ return String.format("%.3f", sectoHr(total)) + " 시간"; }
   public static String minStr(int total){ return String.format("%.1f", sectoMin(total)) + " 분"; }
- 
+
+  public static String getOS() {
+    return System.getProperty("os.name").toLowerCase();
+  }
+
 }

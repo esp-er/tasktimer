@@ -59,6 +59,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.NumberFormatter;
 
 import javafx.embed.swing.JFXPanel;
+import patriker.tasktimer.HelperFunctions;
 
 import org.kordamp.ikonli.antdesignicons.AntDesignIconsFilledIkonHandler;
 import org.kordamp.ikonli.antdesignicons.AntDesignIconsOutlinedIkonHandler;
@@ -113,7 +114,11 @@ public class TaskTimer {
 
   private static int lastKey;
   private static long enterMain; //for DEBUG info
+
+  //Constants
   private int keyHeight = 98;
+  private float tablePadX = 0f;
+  private float tablePadY = 36.0f;
 
   //ScalaFX TaskTable
   private TaskTable table;
@@ -184,6 +189,10 @@ public class TaskTimer {
     TASK_FONTSIZE = sizes.tasksize();
     ICONSIZE = sizes.iconsize();
 
+    //Windows needs needs extra padding for the FX table
+    if(HelperFunctions.getOS().startsWith("windows")){
+      tablePadX = tablePadX + 16.0f;
+    }
 
     ButtonColor = Color.decode(colors.buttons());
     BackColor = Color.decode(colors.background());
@@ -627,13 +636,7 @@ public class TaskTimer {
     //set up jfxpanel resizing
     frame.addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent componentEvent) {
-        var dim = frame.getSize();
-        var topHeight = topPanel.getSize().height;
-        var bottomHeight = bottomPanel.getSize().height;
-        if(table !=null){
-          table.setHeight(Double.valueOf(dim.height) - topHeight - bottomHeight  - 36.0);
-          table.setWidth(Double.valueOf(dim.width) - 16.0);
-        }
+        refreshTableSize();
       }
     });
 
@@ -641,19 +644,26 @@ public class TaskTimer {
       var dim = frame.getSize();
       var topHeight = topPanel.getSize().height;
       var bottomHeight = bottomPanel.getSize().height;
-      if(keypad.isCompact() && table != null)
-          table.setHeight(Double.valueOf(dim.height) - topHeight + keyHeight/2 + 8 - bottomHeight - 36.0);
-      else if(table !=null)
-          table.setHeight(Double.valueOf(dim.height) - topHeight - keyHeight / 2 - 10 - bottomHeight - 36.0);
+      var compactExtraHeight  = keypad.panel.getSize().height / 2 + 8;
+      if(table != null)
+        if(keypad.isCompact())
+            table.setHeight(Double.valueOf(dim.height) - topHeight + compactExtraHeight - bottomHeight - tablePadY);
+        else
+            refreshTableSize();
     });
     keypad.toggleHide.addActionListener((ActionEvent e) -> {
       var dim = frame.getSize();
       var topHeight = topPanel.getSize().height;
       var bottomHeight = bottomPanel.getSize().height;
-      if(keypad.panel.isVisible() && table != null)
-        table.setHeight(Double.valueOf(dim.height) - topHeight + keyHeight - bottomHeight - 36.0);
-      else if(table != null)
-        table.setHeight(Double.valueOf(dim.height) - topHeight - keyHeight - bottomHeight - 36.0);
+      var compactExtraHeight  = keypad.panel.getSize().height / 2 + 8;
+      if(table != null){
+        if(keypad.panel.isVisible())
+          table.setHeight(Double.valueOf(dim.height) - topHeight + keyHeight - bottomHeight - tablePadY);
+        else if(keypad.isCompact())
+          table.setHeight(Double.valueOf(dim.height) - topHeight + compactExtraHeight - bottomHeight - tablePadY);
+        else
+          refreshTableSize();
+      }
       
     });
     // Set up frame properties
@@ -680,10 +690,7 @@ public class TaskTimer {
     table.setAccentColor(HelperFunctions.getHex(BackColor));
     frame.getContentPane().add(BorderLayout.CENTER, fxPanel);
 
-    table.setHeight(Double.valueOf(dim.height) - topHeight - bottomHeight - 36.0);
-    table.setWidth(Double.valueOf(dim.width - 16.0));
-
-    table.totalWorkProp().addListener( (obs, oldval, newval) -> {
+        table.totalWorkProp().addListener( (obs, oldval, newval) -> {
       updateTotalWorkLabel(newval.intValue(), getTotalTasks());
     });
     table.totalTasksProp().addListener( (obs, oldval, newval) -> {
@@ -783,8 +790,25 @@ public class TaskTimer {
       }
     });
     //Tooltip font
+    //
+
+    refreshTableSize();
     UIManager.put("ToolTip.font", new javax.swing.plaf.FontUIResource("SansSerif", Font.PLAIN, 12));
   }
+
+  private void refreshTableSize(){
+    if(table != null){
+      var dim = frame.getSize();
+      var topHeight = topPanel.getSize().height;
+      var bottomHeight = bottomPanel.getSize().height;
+
+      table.setHeight(Double.valueOf(dim.height) - topHeight - bottomHeight - tablePadY);
+      table.setWidth(Double.valueOf(dim.width - tablePadX));
+    }
+  }
+
+
+
 
   public static void setUIFont(javax.swing.plaf.FontUIResource f) {
     java.util.Enumeration keys = UIManager.getDefaults().keys();

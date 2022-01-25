@@ -33,10 +33,10 @@ object TaskTimer extends ScalaModule{
     ivy"com.formdev:flatlaf:1.6"
     //ivy"org.jfxtras:jmetro:11.6.15"
     //ivy"com.lihaoyi::castor:0.1.8",
-  ) ++ javaFXModules
+  ) //++ javaFXModules
 
   //Use when excluding javafx from fatjar
-  //def compileIvyDeps ={ Agg() ++javaFXModules }
+  def compileIvyDeps ={ Agg() ++javaFXModules }
 
 	def forkArgs = Seq("--add-opens=java.desktop/java.awt=ALL-UNNAMED")
 	//def forkEnv = Map("--add-opens java.desktop/java.awt=ALL-UNNAMED")
